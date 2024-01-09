@@ -20,7 +20,7 @@ This Tic-Tac-Toe game presents an enhanced challenge by incorporating advanced A
 ## MiniMax Algorithm
 The core of the AI player (player two) is the MiniMax algorithm. This algorithm explores all possible moves in the game, anticipating the opponent's responses to these moves. It then selects the move that maximizes the potential benefit while minimizing the potential losses, assuming the opponent is also playing optimally.
 
-![mini-max algorith recursive tree illustrated](https://ksvi.mff.cuni.cz/~dingle/2019-20/prog_2/tic_tac_toe.svg)
+![mini-max algorith recursive tree illustrated](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*1_mXxLNvcmJ8s3xzCTd5LQ.png)
 
 ### How MiniMax Works in Tic-Tac-Toe
 - The MiniMax algorithm evaluates the game's state to determine the best possible move for player two.
