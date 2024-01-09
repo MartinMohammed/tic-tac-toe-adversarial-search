@@ -1,5 +1,9 @@
 # Tic-Tac-Toe with Adversarial Search
 
+## Current State and next steps: 
+
+![current state and next steps of the application](./images/current-state-and-next-steps.png)
+
 ## Overview
 This Tic-Tac-Toe game presents an enhanced challenge by incorporating advanced AI techniques for player two. Unlike traditional Tic-Tac-Toe games, this version employs adversarial search, specifically the MiniMax algorithm, to create a formidable opponent in player two (O), playing against player one (X).
 
