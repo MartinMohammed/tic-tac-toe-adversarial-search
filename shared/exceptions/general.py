@@ -50,8 +50,9 @@ class InvalidInstanceError(TypeError):
         self.instance = instance
         self.expected_type = expected_type
         if message is None:
+            type_name: str = expected_type if isinstance(expected_type, str) else expected_type.__name__
             message: str = (
-                f"The provided instance is not of type {expected_type.__name__}."
-                f" Received type: {type(instance).__name__}"
+                f"The provided instance is not of type {type_name}."
+                f" Received type: {instance.__class__.__name__}"
             )
         super().__init__(message)

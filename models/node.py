@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import Generic, Optional
+from typing import Generic, Optional, List
 from shared.types import T, U
+
 
 
 class Node(Generic[T, U]):
@@ -17,9 +18,11 @@ class Node(Generic[T, U]):
         Parameters:
         - state: The state associated with the node.
         - parent: The optional parent node (if exists) from which this node is derived.
+        - children: 
         - action: The action taken to transition from the parent state to the current state.
                 For Tic Tac Toe, this could be a tuple (row, column) indicating the move's position.
         """
         self.state: T = state
         self.parent: Optional[Node[T, U]] = parent
+        self.children: Optional[List[Node[T, U]]] = []
         self.action: U = action

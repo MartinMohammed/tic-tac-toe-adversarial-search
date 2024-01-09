@@ -1,35 +1,36 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from tkinter import Button, Tk, Frame, Label
 from models.game import Game
 from models.grid_location import GridLocation
 from models.node import Node
 from shared.constants import ROWS, COLUMNS, FONT
 from enums.termination_state_enum import TerminationStateEnum
-from shared.exceptions.exception import InvalidGridLocationError
+from shared.exceptions.general import InvalidGridLocationError, InvalidInstanceError
+from models.player import Player
 
 
 class TicTacToeWithGUI:
     def __init__(
         self, game: Game, play_with_adversarial_search: Optional[bool] = False
     ):
-        self._game = game
-        self._play_with_adversarial_search = play_with_adversarial_search
+        self._game: Game = game
+        self._play_with_adversarial_search: bool = play_with_adversarial_search
         self.setup_gui(title="Tic Tac Toe")
         self._window.mainloop()
 
     def setup_gui(self, title: str) -> None:
         """Sets up the GUI for the Tic Tac Toe game."""
-        self._window = Tk()
+        self._window: Tk = Tk()
         self._window.title(title)
 
-        self._label = Label(
+        self._label: Label = Label(
             self._window,
             text=f"Player {self._game.player.identifier} ({self._game.player.symbol}) is next.",
             font=(FONT, 40),
         )
         self._label.pack(side="top")
 
-        reset_button = Button(
+        reset_button: Button = Button(
             self._window,
             text="Restart",
             font=(FONT, 20),
@@ -37,10 +38,10 @@ class TicTacToeWithGUI:
         )
         reset_button.pack(side="top")
 
-        self._frame = Frame(self._window)
+        self._frame: Frame = Frame(self._window)
         self._frame.pack()
 
-        self._buttons = [
+        self._buttons: List[Button] = [
             [
                 self._create_button(GridLocation(row=row, column=column))
                 for column in range(COLUMNS)
@@ -51,7 +52,7 @@ class TicTacToeWithGUI:
     def _create_button(self, gl: GridLocation) -> Button:
         """Creates a button for the Tic Tac Toe grid."""
         row, column = gl.row, gl.column
-        button = Button(
+        button: Button = Button(
             self._frame,
             text="",
             font=(FONT, 40),
@@ -75,9 +76,13 @@ class TicTacToeWithGUI:
             self._label.config(text="Not a valid move.")
             return
 
+        # Because after making move, the player has changed and then updating UI will take the 
+        # wrong Player.
+        player_that_made_move: Player = self._game.player
         self._game.next_turn(gl=gl)
-        self._update_ui(gl=gl)
+        self._update_ui(gl=gl, player=player_that_made_move)
 
+        
         if (
             self._game.termination_state is None
             and self._play_with_adversarial_search
@@ -87,15 +92,18 @@ class TicTacToeWithGUI:
                 int, Node[Game, GridLocation]
             ] = self._game.adversarial_move(make_move=False)
             _, node = adversarial_move
+            print(node.action)
             self.next_turn(gl=node.action, recursive=True)
 
-    def _update_ui(self, gl: GridLocation) -> None:
+    def _update_ui(self, gl: GridLocation, player: Player) -> None:
         """Updates the UI elements based on the current game state."""
         if not isinstance(gl, GridLocation):
             raise InvalidGridLocationError(gl=gl)
+        if not isinstance(player, Player):
+            raise InvalidInstanceError(instance=player, expected_type=Player)
 
         row, col = gl.row, gl.column
-        self._buttons[row][col]["text"] = self._game.player.symbol
+        self._buttons[row][col]["text"] = player.symbol
         termination_state = self._game.termination_state
 
         if termination_state:
@@ -104,20 +112,20 @@ class TicTacToeWithGUI:
                 TerminationStateEnum.PlayerTwoWon,
             ]:
                 self._label.config(
-                    text=f"Player {self._game.player.identifier} has won"
+                    text=f"Player {player.identifier} ({player.symbol}) has won"
                 )
             else:
                 self._label.config(text="It is a tie")
         else:
             self._label.config(
-                text=f"Player {self._game.player.identifier} ({self._game.player.symbol}) is next."
+                text=f"Player {player.identifier} ({player.symbol}) is next."
             )
 
     def restart_game_and_update_label(self) -> None:
         """Restarts the game and updates the label to reflect the new game state."""
         self._game.new_game()
         self._empty_buttons()
-        self._label.config(text=f"Player {self._game.player.identifier} is next.")
+        self._label.config(text=f"Player {self.player.identifier} is next.")
 
     def _empty_buttons(self) -> None:
         """Clears all buttons on the board."""

@@ -6,7 +6,7 @@ from custom_types.grid_type import GridType
 from models.player import Player
 from shared.constants import COLUMNS, ROWS
 from shared.utils.board_utils import create_grid
-from shared.exceptions.exception import (
+from shared.exceptions.general import (
     InvalidGridLocationError,
     InvalidSymbolError,
     InvalidMoveError,

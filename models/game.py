@@ -4,13 +4,12 @@ from models.board import Board
 from models.mini_max import MiniMax
 from models.node import Node
 from models.grid_location import GridLocation
-from enums.mini_max_objective_enum import MiniMaxObjectiveEnum
 from enums.termination_state_enum import TerminationStateEnum
 from models.player import Player
 from enums.player_enum import PlayerEnum
 from shared.utils.player_utils import get_player_by_symbol
 from shared.utils.board_utils import create_grid
-from shared.exceptions.exception import (
+from shared.exceptions.general import (
     InvalidGridLocationError,
     InvalidSymbolError,
     InvalidInstanceError,
@@ -374,7 +373,7 @@ class Game:
             raise InvalidSymbolError(symbol=symbol)
 
         player: Player = get_player_by_symbol(symbol, self._players)
-        if player.identifier == PlayerEnum.PLAYER_1:
+        if player.identifier == PlayerEnum.PLAYER_1.value:
             return TerminationStateEnum.PlayerOneWon
         else:
             return TerminationStateEnum.PlayerTwoWon
