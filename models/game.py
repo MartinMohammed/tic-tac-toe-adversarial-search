@@ -12,6 +12,7 @@ from custom_types.grid_type import GridType
 from enums.player_enum import PlayerEnum
 from shared.utils.player_utils import get_player_by_symbol
 
+
 class Game:
     """
     Represents a Game game with functionalities to manage the game TerminationState,
@@ -30,7 +31,7 @@ class Game:
 
     def __init__(
         self,
-        players: List[Player], 
+        players: List[Player],
         play_with_adversarial_search: bool = False,
         initial_player: Optional[Player] = None,
         initial_board_grid: Optional[GridType] = None,
@@ -45,49 +46,50 @@ class Game:
             initial_player (Optional[str]): The player who starts the game.
             initial_grid (Optional[List[List[str]]]): The initial game state.
         """
-              
+
         # Handling kwargs
         self._quiet = kwargs.get(
             "quiet", True
         )  # Example of handling a 'quiet' keyword argument
-
 
         if len(players) != 2:
             raise ValueError("The number of players must be exactly 2.")
         self._players: List[Player] = players
         if initial_player not in players:
             raise ValueError("The initial player must be one of the players.")
-    
 
-        assert initial_player in players, "The initial player must be part of the provided players."
+        assert (
+            initial_player in players
+        ), "The initial player must be part of the provided players."
 
         if initial_board_grid is None:
             initial_board_grid = [["" for _ in range(COLUMNS)] for _ in range(ROWS)]
-        
+
         self._board = Board(initial_grid=initial_board_grid)
-        
+
         self._play_with_adversarial_search: bool = play_with_adversarial_search
         self._mini_max: Optional[MiniMax[Game, GridLocation]] = None
 
         # Needed when restarting the game
-        self._initial_player: Player = initial_player if initial_player is not None else players[0]
+        self._initial_player: Player = (
+            initial_player if initial_player is not None else players[0]
+        )
         self._player: Player = initial_player
 
         # Get the termination state of the current board:
         self._termination_state: Optional[TerminationStateEnum] = None
 
-
         # Cannot be None if game has terminated
         if Game.terminal(self):
-            self._termination_state: TerminationStateEnum = self._get_termination_state()
-        
+            self._termination_state: TerminationStateEnum = (
+                self._get_termination_state()
+            )
 
     def start(self) -> None:
         """Add information to the console that the game has started."""
         print("The game begins: ")
         if not self._quiet:
             self.show_game()
-
 
     @property
     def player(self) -> Player:
@@ -243,7 +245,7 @@ class Game:
 
         if not self._quiet:
             self.show_game()
-    
+
     def show_game(self) -> None:
         """
         Displays the current state of the game board to the console.
@@ -252,7 +254,7 @@ class Game:
         print("-" * 10)
         print(self)
         print("-" * 10)
-        
+
     def _get_termination_state(self) -> Optional[TerminationStateEnum]:
         """
         Determines the termination state of the current game.
@@ -269,7 +271,7 @@ class Game:
             - If the game is still ongoing, `self._termination_state` remains unchanged.
 
         Returns:
-            Optional[TerminationStateEnum]: The termination state of the game (win for player one, 
+            Optional[TerminationStateEnum]: The termination state of the game (win for player one,
             win for player two, tie, or None if the game is ongoing).
         """
 
@@ -278,18 +280,26 @@ class Game:
 
         # Check horizontal and vertical lines
         for i in range(3):
-            if _check_line_match(self._board.grid[i][0], self._board.grid[i][1], self._board.grid[i][2]):
+            if _check_line_match(
+                self._board.grid[i][0], self._board.grid[i][1], self._board.grid[i][2]
+            ):
                 self._termination_state = self._determine_winner(self._board.grid[i][0])
                 return self._termination_state
-            if _check_line_match(self._board.grid[0][i], self._board.grid[1][i], self._board.grid[2][i]):
+            if _check_line_match(
+                self._board.grid[0][i], self._board.grid[1][i], self._board.grid[2][i]
+            ):
                 self._termination_state = self._determine_winner(self._board.grid[0][i])
                 return self._termination_state
 
         # Check diagonal lines
-        if _check_line_match(self._board.grid[0][0], self._board.grid[1][1], self._board.grid[2][2]):
+        if _check_line_match(
+            self._board.grid[0][0], self._board.grid[1][1], self._board.grid[2][2]
+        ):
             self._termination_state = self._determine_winner(self._board.grid[0][0])
             return self._termination_state
-        if _check_line_match(self._board.grid[0][2], self._board.grid[1][1], self._board.grid[2][0]):
+        if _check_line_match(
+            self._board.grid[0][2], self._board.grid[1][1], self._board.grid[2][0]
+        ):
             self._termination_state = self._determine_winner(self._board.grid[0][2])
             return self._termination_state
 
@@ -300,7 +310,6 @@ class Game:
 
         # Game is still ongoing
         return None
-
 
     def _determine_winner(self, symbol: str) -> TerminationStateEnum:
         """
@@ -320,11 +329,11 @@ class Game:
 
     def _copy_game(self) -> Game:
         """
-        Creates a deep copy of the current Game instance. 
+        Creates a deep copy of the current Game instance.
 
-        This method is useful for creating a new Game instance that preserves the current game's state, 
+        This method is useful for creating a new Game instance that preserves the current game's state,
         including player information, current player turn, and the board state, without affecting the original game.
-        Especially useful in scenarios like implementing game AI where exploring future moves without altering the 
+        Especially useful in scenarios like implementing game AI where exploring future moves without altering the
         current game state is required.
 
         Returns:
@@ -346,10 +355,14 @@ class Game:
 
         Postconditions:
             - The `_player` attribute is updated to reference the next player.
-        Returns: 
+        Returns:
             - (Player): Return sthe new player
         """
-        next_player: Player = self._players[1] if self._player.identifier == self._players[0].identifier else self._players[0]
+        next_player: Player = (
+            self._players[1]
+            if self._player.identifier == self._players[0].identifier
+            else self._players[0]
+        )
         self._player: Player = next_player
         return self._player
 
@@ -370,9 +383,9 @@ class Game:
         if has_game_terminated:
             if self._termination_state == TerminationStateEnum.Tie:
                 termination_info: str = "It is a tie!"
-            else: 
+            else:
                 termination_info = f"The winner is Player {self._player.identifier} ({self._player.symbol})"
-        
+
         return (
             f"Game has terminated: {has_game_terminated}\n"
             f"Board State:\n{self._board}\n"

@@ -2,6 +2,7 @@ from typing import List, Optional
 from custom_types.board_symbols_type import BoardSymbolsType
 from models.player import Player
 
+
 def get_player_symbols(players: List[Player]) -> BoardSymbolsType:
     """
     Extracts and returns the symbols of each player in the provided list.
@@ -18,11 +19,12 @@ def get_player_symbols(players: List[Player]) -> BoardSymbolsType:
     """
     return [player.symbol for player in players]
 
+
 def get_player_by_symbol(symbol: str, players: List[Player]) -> Optional[Player]:
     """
     Retrieves the player associated with the given symbol.
 
-    Iterates over the list of players and returns the player whose symbol matches the given symbol. 
+    Iterates over the list of players and returns the player whose symbol matches the given symbol.
     If no matching player is found, returns None.
 
     Parameters:
@@ -35,4 +37,3 @@ def get_player_by_symbol(symbol: str, players: List[Player]) -> Optional[Player]
     for player in players:
         if player.symbol == symbol:
             return player
-    

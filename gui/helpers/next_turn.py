@@ -30,7 +30,9 @@ def next_turn(
     termination_state: Union[None, TerminationStateEnum] = game.termination_state
 
     if termination_state is None:
-        label.config(text=f"Player {game.player.identifier} ({game.player.symbol}) is next.")
+        label.config(
+            text=f"Player {game.player.identifier} ({game.player.symbol}) is next."
+        )
         if game.player.identifier == 2 and play_with_adversarial_search:
             score, next_node = game.adversarial_move(make_move=False)
             action: GridLocation = next_node.action
@@ -48,6 +50,8 @@ def next_turn(
         TerminationStateEnum.PlayerTwoWon,
         TerminationStateEnum.PlayerOneWon,
     ]:
-        label.config(text=f"Player {game.player.identifier} ({game.player.symbol}) has won")
+        label.config(
+            text=f"Player {game.player.identifier} ({game.player.symbol}) has won"
+        )
     else:
         label.config(text="It is a tie")

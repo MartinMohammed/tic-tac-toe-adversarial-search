@@ -6,6 +6,7 @@ from custom_types.grid_type import GridType
 from models.player import Player
 from shared.constants import COLUMNS, ROWS
 
+
 class Board:
     """
     Represents a grid board used in games like Tic Tac Toe, typically 3x3 in size.
@@ -28,6 +29,7 @@ class Board:
         _maximum_plays (int): The total number of plays possible on the board.
         _plays (int): The number of plays that have been made on the board.
     """
+
     def __init__(self, initial_grid: GridType) -> None:
         if len(initial_grid) != ROWS or len(initial_grid[0]) != COLUMNS:
             raise ValueError("The board must be 3 rows by 3 columns in size.")
@@ -115,8 +117,8 @@ class Board:
 
     def result(self, action: GridLocation) -> Board:
         """
-        Creates a deep copy of the current Board instance, performs the specified action on the copy, 
-        and returns the resulting board. This is useful for evaluating the consequences of a move without 
+        Creates a deep copy of the current Board instance, performs the specified action on the copy,
+        and returns the resulting board. This is useful for evaluating the consequences of a move without
         altering the current state of the board.
 
         Parameters:
@@ -126,7 +128,7 @@ class Board:
             Board: A new Board instance reflecting the state after performing the action.
         """
         return self._copy_board().mark(action)
-    
+
     def reset_board(self) -> Board:
         """
         Resets the game board to its initial state and returns the reset board.
@@ -164,7 +166,7 @@ class Board:
         """
         self._grid = [["" for _ in range(self._columns)] for _ in range(self._rows)]
 
-    def check_valid_move(self, gl: GridLocation) -> bool:  
+    def check_valid_move(self, gl: GridLocation) -> bool:
         """
         Checks whether a proposed move is valid. A move is valid if it is within board boundaries and the target field is unoccupied.
 
@@ -229,4 +231,6 @@ class Board:
         Returns:
             str: The string representation of the game board, showing the current state of each cell.
         """
-        return "\n".join([" ".join([cell if cell else "." for cell in row]) for row in self._grid])
+        return "\n".join(
+            [" ".join([cell if cell else "." for cell in row]) for row in self._grid]
+        )

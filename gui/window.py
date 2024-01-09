@@ -6,19 +6,27 @@ from gui.helpers.next_turn import next_turn
 from gui.helpers.restart_game import restart_game
 
 
-def construct_window_and_game(game: Game, play_with_adversarial_search: bool = False) -> Tk:
+def construct_window_and_game(
+    game: Game, play_with_adversarial_search: bool = False
+) -> Tk:
     # Initialize the main window for the game
     window = Tk()
     window.title("Tic-Tac-Toe")
 
     # Initialize a label to display whose turn it is
-    label = Label(window, text=f"Player {game.player.identifier} ({game.player.symbol}) is next.", font=(FONT, 40))
+    label = Label(
+        window,
+        text=f"Player {game.player.identifier} ({game.player.symbol}) is next.",
+        font=(FONT, 40),
+    )
     label.pack(side="top")
 
     # Define a function to update the label and restart the game
     def restart_game_and_update_label(game: Game):
         restart_game(game, buttons, label)
-        label.config(text=f"Player {game.player.identifier} ({game.player.symbol}) is next.")
+        label.config(
+            text=f"Player {game.player.identifier} ({game.player.symbol}) is next."
+        )
 
     # Define a button to reset the game, linking it to the 'restart_game_and_update_label' function
     reset_button = Button(
