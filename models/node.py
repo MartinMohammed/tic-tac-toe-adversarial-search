@@ -3,7 +3,6 @@ from typing import Generic, Optional, List
 from shared.types import T, U
 
 
-
 class Node(Generic[T, U]):
     """
     Represents a node in a partially directed graph where nodes can have children,
@@ -18,7 +17,7 @@ class Node(Generic[T, U]):
         Parameters:
         - state: The state associated with the node.
         - parent: The optional parent node (if exists) from which this node is derived.
-        - children: 
+        - children:
         - action: The action taken to transition from the parent state to the current state.
                 For Tic Tac Toe, this could be a tuple (row, column) indicating the move's position.
         """

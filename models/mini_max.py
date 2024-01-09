@@ -20,7 +20,7 @@ class MiniMax(Generic[T, U]):
         _utility (Callable[[T], int]): Function to evaluate the utility value of a terminal state.
         _actions (Callable[[T], List[U]]): Function to generate a list of possible actions from a given state.
         _result (Callable[[T, U], T]): Function to determine the resulting state from an action.
-    
+
     Methods:
         start_mini_max: Initiates the MiniMax algorithm and returns the best move and its value.
         max_value: Recursive function to calculate the maximum value of a node.
@@ -31,12 +31,17 @@ class MiniMax(Generic[T, U]):
         InvalidInstanceError: If provided nodes, states, actions, or termination states are of incorrect types.
     """
 
-    def __init__(self, initial_node: Node[T, U], terminal: Callable[[T], bool],
-                 utility: Callable[[T], int], actions: Callable[[T], List[U]],
-                 result: Callable[[T, U], T]) -> None:
+    def __init__(
+        self,
+        initial_node: Node[T, U],
+        terminal: Callable[[T], bool],
+        utility: Callable[[T], int],
+        actions: Callable[[T], List[U]],
+        result: Callable[[T, U], T],
+    ) -> None:
         if not isinstance(initial_node, Node):
             raise InvalidInstanceError(instance=initial_node, expected_type=Node)
-        
+
         # Additional type checks for Node components can be added here if necessary
 
         self._initial_node: Node[T, U] = initial_node
@@ -55,16 +60,15 @@ class MiniMax(Generic[T, U]):
         and choosing the one leading to the state with the highest minimum value.
         """
 
-       # Type checking using the class name as a string
+        # Type checking using the class name as a string
         if node.parent is not None and not isinstance(node.parent, Node):
-                raise InvalidInstanceError(instance=node.parent, expected_type=Node)
+            raise InvalidInstanceError(instance=node.parent, expected_type=Node)
 
-        if  node.state.__class__.__name__ != 'Game':
-            raise InvalidInstanceError(instance=node.state, expected_type='Game')
+        if node.state.__class__.__name__ != "Game":
+            raise InvalidInstanceError(instance=node.state, expected_type="Game")
 
         if node.action is not None and not isinstance(node.action, GridLocation):
             raise InvalidInstanceError(instance=node.action, expected_type=GridLocation)
-
 
         # If state is terminal, then it's score will not be None.
         if self._terminal(node.state):
@@ -90,13 +94,12 @@ class MiniMax(Generic[T, U]):
         """
         if not isinstance(node, Node):
             raise InvalidInstanceError(instance=node, expected_type=Node)
-        
-       # Type checking using the class name as a string
-        if node.parent is not None and not isinstance(node.parent, Node):
-                raise InvalidInstanceError(instance=node.parent, expected_type=Node)
-        if  node.state.__class__.__name__ != 'Game':
-            raise InvalidInstanceError(instance=node.state, expected_type='Game')
 
+        # Type checking using the class name as a string
+        if node.parent is not None and not isinstance(node.parent, Node):
+            raise InvalidInstanceError(instance=node.parent, expected_type=Node)
+        if node.state.__class__.__name__ != "Game":
+            raise InvalidInstanceError(instance=node.state, expected_type="Game")
 
         if not isinstance(node.action, GridLocation):
             raise InvalidInstanceError(instance=node.action, expected_type=GridLocation)
@@ -122,6 +125,10 @@ class MiniMax(Generic[T, U]):
         Determines the score from a termination state. If the game is ongoing, indicated by None,
         the score is also None. Otherwise, it returns the value associated with the termination state.
         """
-        if termination_state is not None and not isinstance(termination_state, TerminationStateEnum):
-            raise InvalidInstanceError(instance=termination_state, expected_type=TerminationStateEnum)
+        if termination_state is not None and not isinstance(
+            termination_state, TerminationStateEnum
+        ):
+            raise InvalidInstanceError(
+                instance=termination_state, expected_type=TerminationStateEnum
+            )
         return None if termination_state is None else termination_state.value

@@ -76,13 +76,12 @@ class TicTacToeWithGUI:
             self._label.config(text="Not a valid move.")
             return
 
-        # Because after making move, the player has changed and then updating UI will take the 
+        # Because after making move, the player has changed and then updating UI will take the
         # wrong Player.
         player_that_made_move: Player = self._game.player
         self._game.next_turn(gl=gl)
         self._update_ui(gl=gl, player=player_that_made_move)
 
-        
         if (
             self._game.termination_state is None
             and self._play_with_adversarial_search
