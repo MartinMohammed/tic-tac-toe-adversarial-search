@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 
 from models.grid_location import GridLocation
 from custom_types.grid_type import GridType
@@ -60,32 +60,29 @@ class Board:
         """
         return self._plays
 
-    def mark(self, gl: GridLocation, player: Player) -> Board:
+    def result(self, action: GridLocation, symbol: str) -> Board:
         """
-        Marks a position on the board with the specified player's symbol and returns the updated board state.
-
-        This method first checks if the move is valid (i.e., within bounds and unoccupied). If valid, it updates the game grid
-        at the specified grid location with the symbol of the player's enum, increments the count of plays, and returns the
-        current instance of the Board reflecting the updated state. If the move is invalid, a warning is printed, and the
-        current state of the board is returned without any changes.
+        Creates a deep copy of the current Board instance, performs the specified action on the copy,
+        and returns the resulting board. This is useful for evaluating the consequences of a move without
+        altering the current state of the board.
 
         Parameters:
-            gl (GridLocation): The grid location to mark.
-            player (PlayerEnum): The player making the mark.
+            action (GridLocation): The grid location where the move is to be made.
+            symbol (str): The symbol to mark at the specified location.
 
         Returns:
-            Board: The current instance of the Board with the updated state after marking the specified location.
+            Board: A new Board instance reflecting the state after performing the action.
+
+        Raises:
+            ValueError: If 'action' is not a GridLocation or if 'symbol' is not a string.
         """
-        if not self.check_valid_move(gl=gl):
-            print(f"This move {gl} is not allowed")
-            return self
+        if not isinstance(action, GridLocation):
+            raise ValueError(f"The provided action {action} is not a GridLocation.")
+        if not isinstance(symbol, str):
+            raise ValueError(f"The provided symbol {symbol} is not a string.")
 
-        # Increase the number of plays.
-        self._plays += 1
+        return self.copy_board().mark(gl=action, symbol=symbol)
 
-        row, column = gl.row, gl.column
-        self._grid[row][column] = player.symbol
-        return self
 
     def show_board(self) -> None:
         """
@@ -95,6 +92,7 @@ class Board:
         """
         print(self)
 
+    
     def actions(self) -> List[GridLocation]:
         """
         Generates a list of possible grid locations that can be selected from the current board given its state.
@@ -115,20 +113,6 @@ class Board:
 
     def terminal(self) -> bool:
         """Determines whether a game has terminated or not."""
-
-    def result(self, action: GridLocation) -> Board:
-        """
-        Creates a deep copy of the current Board instance, performs the specified action on the copy,
-        and returns the resulting board. This is useful for evaluating the consequences of a move without
-        altering the current state of the board.
-
-        Parameters:
-            action (GridLocation): The grid location where the move is to be made.
-
-        Returns:
-            Board: A new Board instance reflecting the state after performing the action.
-        """
-        return self.copy_board().mark(action)
 
     def reset_board(self) -> Board:
         """
@@ -165,7 +149,7 @@ class Board:
         This method resets each cell in the game grid to an empty state, preparing the board for a new game or for
         state evaluation purposes.
         """
-        self._grid = create_grid(fill="")
+        self._grid = create_grid(fill="", columns=self._columns, rows=self._rows)
 
     def check_valid_move(self, gl: GridLocation) -> bool:
         """
@@ -177,9 +161,91 @@ class Board:
         Returns:
             bool: True if the move is valid (within boundaries and unoccupied), False otherwise.
         """
+        if not isinstance(gl, GridLocation):
+            raise ValueError(f"The provided GridLocation {gl} is not a GridLocation.")
+    
         if self._check_out_of_boundary(gl) or self._is_blocked(gl):
             return False
         return True
+
+    def mark(self, gl: GridLocation, symbol: str) -> Board:
+        """
+        Marks a position on the board with the specified symbol and returns the updated board state.
+
+        This method updates the game grid at the specified grid location with the provided symbol, if the move
+        is valid (i.e., within bounds and unoccupied). It increments the count of plays upon a successful mark.
+        If the move is invalid or if the input parameters are incorrect, a ValueError is raised.
+
+        Parameters:
+            gl (GridLocation): The grid location to mark.
+            symbol (str): The symbol to place at the grid location.
+
+        Returns:
+            Board: The current instance of the Board with the updated state after marking the specified location.
+
+        Raises:
+            ValueError: If either no GridLocation or symbol is provided, if the symbol is not a string, or if the move is not allowed.
+        """
+        if gl is None or symbol is None:
+            raise ValueError("Both grid location and symbol must be provided.")
+
+        if not isinstance(symbol, str):
+            raise ValueError(f"The provided symbol ({symbol}) must be a string.")
+
+        if not self.check_valid_move(gl):
+            raise ValueError(f"Move at {gl} is not allowed.")
+
+        self._plays += 1
+        self._grid[gl.row][gl.column] = symbol
+        return self
+
+
+
+    def check_horizontals(self) -> Optional[str]:
+        """
+        Checks each horizontal row in the grid to see if any are completely filled with the same symbol.
+
+        Returns:
+            Optional[str]: The symbol that fills a complete row, or None if no row is completely filled by a single symbol.
+        """
+        for row in self._grid:
+            if all(cell == row[0] and cell != "" for cell in row):
+                return row[0]
+
+        return None
+
+
+    def check_verticals(self) -> Optional[str]:
+        """
+        Checks each vertical column in the grid to see if any are completely filled with the same symbol.
+
+        Returns:
+            Optional[str]: The symbol that fills a complete column, or None if no column is completely filled by a single symbol.
+        """
+        for col_index in range(self._columns):
+            column = [self._grid[row][col_index] for row in range(self._rows)]
+            if all(cell == column[0] and cell != "" for cell in column):
+                return column[0]
+
+        return None
+
+
+    def check_diagonals(self) -> Optional[str]:
+        """
+        Checks both diagonals in the grid to see if any are completely filled with the same symbol.
+
+        Returns:
+            Optional[str]: The symbol that fills a complete diagonal, or None if no diagonal is completely filled by a single symbol.
+        """
+        # Check left-to-right diagonal
+        if all(self._grid[i][i] == self._grid[0][0] and self._grid[i][i] != "" for i in range(self._rows)):
+            return self._grid[0][0]
+
+        # Check right-to-left diagonal
+        if all(self._grid[i][self._columns - 1 - i] == self._grid[0][self._columns - 1] and self._grid[i][self._columns - 1 - i] != "" for i in range(self._rows)):
+            return self._grid[0][self._columns - 1]
+
+        return None
 
     def _check_out_of_boundary(self, gl: GridLocation) -> bool:
         """
@@ -223,10 +289,7 @@ class Board:
         Returns:
             GridType: A new grid that is a deep copy of the current board's grid.
         """
-        return [
-            [self._grid[row][column] for column in range(self._columns)]
-            for row in range(self._rows)
-        ]
+        return create_grid(fill_by=self._grid, columns=self._columns, rows=self._rows)
 
     def __str__(self) -> str:
         """

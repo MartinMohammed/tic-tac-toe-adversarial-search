@@ -1,3 +1,3 @@
-from typing import List
+from typing import List, Any
 
-GridType = List[List[str]]
+GridType = List[List[Any]]

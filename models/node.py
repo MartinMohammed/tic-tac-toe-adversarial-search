@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Generic, Optional
 from shared.types import T, U
 
@@ -8,7 +9,7 @@ class Node(Generic[T, U]):
     but not all nodes necessarily have a parent.
     """
 
-    def __init__(self, state: T, parent: Optional["Node[T, U]"], action: Optional[U]):
+    def __init__(self, state: T, parent: Optional[Node[T, U]], action: Optional[U]):
         """
         Initializes a node in the graph with the given state, optional parent node,
         cost, and heuristic.
@@ -20,5 +21,5 @@ class Node(Generic[T, U]):
                 For Tic Tac Toe, this could be a tuple (row, column) indicating the move's position.
         """
         self.state: T = state
-        self.parent: Optional["Node[T, U]"] = parent
+        self.parent: Optional[Node[T, U]] = parent
         self.action: U = action

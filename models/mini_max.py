@@ -86,8 +86,8 @@ class MiniMax(Generic[T, U]):
 
         v, max_node = float("-inf"), None
         for action in self._actions(node.state):
-            new_state = self._result(node.state, action)
-            new_node = Node(state=new_state, parent=node, action=action)
+            new_state: T = self._result(node.state, action)
+            new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
 
             new_state_min_value, _ = self.min_value(new_node)
             if new_state_min_value > v:
@@ -107,8 +107,8 @@ class MiniMax(Generic[T, U]):
 
         v, min_node = float("inf"), None
         for action in self._actions(node.state):
-            new_state = self._result(node.state, action)
-            new_node = Node(state=new_state, parent=node, action=action)
+            new_state: T = self._result(node.state, action)
+            new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
 
             new_state_max_value, _ = self.max_value(new_node)
             if new_state_max_value < v:

@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import Optional, List, Tuple, Any
-from shared.constants import ROWS, COLUMNS
+from typing import Optional, List, Tuple
 from models.board import Board
 from models.mini_max import MiniMax
 from models.node import Node
@@ -8,7 +7,6 @@ from models.grid_location import GridLocation
 from enums.mini_max_objective_enum import MiniMaxObjectiveEnum
 from enums.termination_state_enum import TerminationStateEnum
 from models.player import Player
-from custom_types.grid_type import GridType
 from enums.player_enum import PlayerEnum
 from shared.utils.player_utils import get_player_by_symbol
 from shared.utils.board_utils import create_grid
@@ -143,12 +141,7 @@ class Game:
         """
         Provides a list of all possible legal moves in the current game state.
         """
-        return [
-            GridLocation(row=row, column=column)
-            for column in range(COLUMNS)
-            for row in range(ROWS)
-            if instance._board.grid[row][column] == ""
-        ]
+        return instance._board.actions()
 
     @staticmethod
     def terminal(instance: Game) -> bool:
@@ -175,9 +168,9 @@ class Game:
         Returns:
             Game: The current instance of the Game, updated with the changes made during this turn.
         """
-        if self._board.check_valid_move(gl):
+        if self._board.check_valid_move(gl=gl):
             # Make the move
-            self._board.mark(gl=gl, player=self._player)
+            self._board.mark(gl=gl, symbol=self._player.symbol)
 
             winner: Optional[TerminationStateEnum] = self._get_termination_state()
 
@@ -199,7 +192,7 @@ class Game:
                 self.adversarial_move(make_move=True)
         return self
 
-    def adversarial_move(self, make_move=False) -> Tuple[int, Node[Any, GridLocation]]:
+    def adversarial_move(self, make_move=False) -> Tuple[int, Node[Game, GridLocation]]:
         """
         Executes an adversarial move based on the MiniMax algorithm in the current game state.
 
@@ -216,7 +209,7 @@ class Game:
             Tuple[int, Node[TicTacToe, GridLocation]]: A tuple containing the score of the
             computed move and the node representing the game state after the move is made.
         """
-        self._mini_max = MiniMax[Game, GridLocation](
+        self._mini_max: MiniMax[Game, GridLocation] = MiniMax[Game, GridLocation](
             initial_node=Node(state=self, parent=None, action=None),
             initial_objective=MiniMaxObjectiveEnum.MAX,
             terminal=Game.terminal,
@@ -264,7 +257,6 @@ class Game:
         """
         print("-" * 10)
         print(self)
-        print("-" * 10)
 
     def _get_termination_state(self) -> Optional[TerminationStateEnum]:
         """
@@ -278,7 +270,7 @@ class Game:
         Postconditions:
             - If a win condition is detected, `self._termination_state` is updated to the corresponding
             termination state (PlayerOneWon or PlayerTwoWon).
-            - If a tie condition is detected, `self._termination_state` remains unchanged.
+            - If a tie condition is detected, `self._termination_state` is updated to Tie.
             - If the game is still ongoing, `self._termination_state` remains unchanged.
 
         Returns:
@@ -286,41 +278,21 @@ class Game:
             win for player two, tie, or None if the game is ongoing).
         """
 
-        def _check_line_match(a, b, c) -> bool:
-            return a == b == c != ""
-
         # Check horizontal and vertical lines
-        for i in range(3):
-            if _check_line_match(
-                self._board.grid[i][0], self._board.grid[i][1], self._board.grid[i][2]
-            ):
-                self._termination_state = self._determine_winner(self._board.grid[i][0])
+        for check in [self._board.check_horizontals, self._board.check_verticals, self._board.check_diagonals]:
+            winner = check()
+            if winner is not None:
+                self._termination_state: TerminationStateEnum = self._determine_winner(winner)
                 return self._termination_state
-            if _check_line_match(
-                self._board.grid[0][i], self._board.grid[1][i], self._board.grid[2][i]
-            ):
-                self._termination_state = self._determine_winner(self._board.grid[0][i])
-                return self._termination_state
-
-        # Check diagonal lines
-        if _check_line_match(
-            self._board.grid[0][0], self._board.grid[1][1], self._board.grid[2][2]
-        ):
-            self._termination_state = self._determine_winner(self._board.grid[0][0])
-            return self._termination_state
-        if _check_line_match(
-            self._board.grid[0][2], self._board.grid[1][1], self._board.grid[2][0]
-        ):
-            self._termination_state = self._determine_winner(self._board.grid[0][2])
-            return self._termination_state
 
         # Check for tie
-        if self._board.plays == 9:
-            self._termination_state = TerminationStateEnum.Tie
+        if self._board.plays == self._board._columns * self._board._rows:
+            self._termination_state: TerminationStateEnum = TerminationStateEnum.Tie
             return TerminationStateEnum.Tie
 
         # Game is still ongoing
         return None
+
 
     def _determine_winner(self, symbol: str) -> TerminationStateEnum:
         """
@@ -396,7 +368,6 @@ class Game:
                 termination_info: str = "It is a tie!"
             else:
                 termination_info = f"The winner is Player {self._player.identifier} ({self._player.symbol})"
-        self._board.show_board()
         return (
             f"Game has terminated: {has_game_terminated}\n"
             f"Board State:\n{self._board}\n"
