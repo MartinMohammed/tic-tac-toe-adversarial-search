@@ -1,14 +1,15 @@
-from typing import Optional, List, Union, Tuple, Any, Callable
+from typing import Optional, List, Tuple, Any, Callable
 from models.mini_max import MiniMax
 from models.node import Node
 from models.grid_location import GridLocation
 from enums.mini_max_objective_enum import MiniMaxObjectiveEnum
 from enums.termination_state_enum import TerminationStateEnum
-import random 
+import random
+
 
 class TicTacToe:
     """
-    Represents a TicTacToe game with functionalities to manage the game TerminationState, 
+    Represents a TicTacToe game with functionalities to manage the game TerminationState,
     perform moves, and check game status.
 
     Attributes:
@@ -18,17 +19,18 @@ class TicTacToe:
         _player (str): The current player.
         _initial_player (str): The initial player. Reset to this player if game restarts and no player switch.
         _grid (List[List[str]]): The game board.
-        _termination_state (Union[None, TerminationState]): The termination of the game if it has ended.
+        _termination_state (Optional[TerminationState]): The termination of the game if it has ended.
         _mini_max: (MiniMax[TicTacToe, GridLocation]): MiniMax instance for adversarial search.
     """
 
-    def __init__(self,
-                 play_with_adversarial_search: bool = False, 
-                 players: Optional[List[str]] = None, 
-                 initial_player: Optional[str] = None, 
-                 initial_grid: Optional[List[List[str]]] = None,
-                 **kwargs,
-                ) -> None:
+    def __init__(
+        self,
+        play_with_adversarial_search: bool = False,
+        players: Optional[List[str]] = None,
+        initial_player: Optional[str] = None,
+        initial_grid: Optional[List[List[str]]] = None,
+        **kwargs,
+    ) -> None:
         """
         Initializes a new TicTacToe game with optional parameters for players,
         the initial player, and the game grid.
@@ -39,10 +41,12 @@ class TicTacToe:
             initial_grid (Optional[List[List[str]]]): The initial game state.
         """
         # Handling kwargs
-        self._quiet = kwargs.get('quiet', True)  # Example of handling a 'quiet' keyword argument
+        self._quiet = kwargs.get(
+            "quiet", True
+        )  # Example of handling a 'quiet' keyword argument
         self._play_with_adversarial_search: bool = play_with_adversarial_search
         self._mini_max: Optional[MiniMax[TicTacToe, GridLocation]] = None
-        
+
         if players is None:
             players: List[str] = ["x", "o"]
         if initial_player is None:
@@ -55,26 +59,31 @@ class TicTacToe:
             raise ValueError("The number of players must be exactly 2.")
         if initial_player not in players:
             raise ValueError("The initial player must be one of the players.")
-        
+
         self._players: List[str] = players
         self._player: str = initial_player
 
         if initial_grid is None:
             self._grid: List[List[str]] = [["" for _ in range(3)] for _ in range(3)]
             self._plays: int = 0
-            self._termination_state: Union[None, TerminationStateEnum] = None
+            self._termination_state: Optional[TerminationStateEnum] = None
         else:
             self._grid: List[List[str]] = initial_grid
             # The number of plays is the number of fields that are not available.
             self._plays: int = sum(cell != "" for row in self._grid for cell in row)
-            self._termination_state: Union[None, TerminationStateEnum] = self._get_termination_state()
+            self._termination_state: Optional[
+                TerminationStateEnum
+            ] = self._get_termination_state()
 
     def start(self) -> None:
         print("The game begins: ")
         if not self._quiet:
             self.show_game()
         # Game is initialized, ready to make first step if Player 2 has first move and play_with_adversarial_search = True
-        if self._play_with_adversarial_search and self.identify_player(self._initial_player) == 2:
+        if (
+            self._play_with_adversarial_search
+            and self.identify_player(self._initial_player) == 2
+        ):
             self.adversarial_move(make_move=True)
 
     @property
@@ -101,47 +110,49 @@ class TicTacToe:
     def players(self) -> List[str]:
         """
         Retrieves the list of player symbols.
-        
+
         Returns:
             List[str]: The symbols of the players.
         """
         return self._players
 
     @property
-    def termination_state(self) -> Union[None, TerminationStateEnum]:
+    def termination_state(self) -> Optional[TerminationStateEnum]:
         """
         Retrieves the current termination state of the game.
 
         Returns:
-            Union[None, TerminationState]: Termination State of the game. 
+            Optional[TerminationState]: Termination State of the game.
         """
         return self._termination_state
 
-
     @staticmethod
-    def utility(instance) -> Union[None, TerminationStateEnum]:
+    def utility(instance) -> Optional[TerminationStateEnum]:
         """
         Determines the utility of the game if it has reached a terminal state.
         """
         return instance.termination_state
-            
-        
+
     @staticmethod
     def result(instance, gl: GridLocation):
         """
         Predicts the game state resulting from making a move at the specified location.
         """
-        copy = instance._copy_game()    
+        copy = instance._copy_game()
         copy.next_turn(gl)
         return copy
-        
 
     @staticmethod
     def actions(instance) -> List[GridLocation]:
         """
         Provides a list of all possible legal moves in the current game state.
         """
-        return [GridLocation(row=row, column=column) for column in range(3) for row in range(3) if instance._grid[row][column] == ""]
+        return [
+            GridLocation(row=row, column=column)
+            for column in range(3)
+            for row in range(3)
+            if instance._grid[row][column] == ""
+        ]
 
     @staticmethod
     def terminal(instance) -> bool:
@@ -153,7 +164,7 @@ class TicTacToe:
     def next_turn(self, gl: GridLocation) -> None:
         """
         Processes the next turn in the game at the specified grid location.
-    
+
         Args:
             gl (GridLocation): The location where the next move is made.
         """
@@ -161,37 +172,41 @@ class TicTacToe:
             if not self._quiet:
                 print("The game has ended. Please restart the game.")
             return
-    
+
         if not self._check_valid_move(gl):
             print(f"The specified move {gl} is not valid. Please try again.")
             return
-    
+
         # Make the move
         self._plays += 1
         row, column = gl.row, gl.column
         self._grid[row][column] = self._player
 
-        winner: Optional[TerminationStateEnum] = self._get_termination_state(); 
-        
+        winner: Optional[TerminationStateEnum] = self._get_termination_state()
+
         # Game has not ended yet.
         if winner is None:
             self._switch_player()
         else:
             # The game terminated.
             self._termination_state = winner
-            
+
         if not self._quiet:
             self.show_game()
-        
-        if self._play_with_adversarial_search and self.identify_player(self.player) == 2 and self._termination_state is None:
+
+        if (
+            self._play_with_adversarial_search
+            and self.identify_player(self.player) == 2
+            and self._termination_state is None
+        ):
             self.adversarial_move(make_move=True)
-            
+
     def empty_spaces(self) -> None:
         """
         Resets the game board, clearing all occupied spaces.
         """
         self._grid: List[List[str]] = [["" for _ in range(3)] for _ in range(3)]
-    
+
     def new_game(self, change_players: bool = False) -> None:
         """
         Starts a new game, optionally switching the starting player.
@@ -201,18 +216,25 @@ class TicTacToe:
         """
         self.empty_spaces()
         self._plays: int = 0
-        self._termination_state: Union[None, TerminationStateEnum] = None
+        self._termination_state: Optional[TerminationStateEnum] = None
         self._player = self._initial_player
         if change_players:
             self._switch_player()
 
         if self._play_with_adversarial_search:
             # A new instace for the minimax object since the current state has been reseted.
-            self._mini_max = MiniMax[TicTacToe, GridLocation] = MiniMax(initial_node=Node(state=self, parent=None, action=None), initial_objective=MiniMaxObjectiveEnum.MAX, terminal=TicTacToe.terminal, utility=TicTacToe.utility, result=TicTacToe.result, actions=TicTacToe.actions)
+            self._mini_max = MiniMax[TicTacToe, GridLocation] = MiniMax(
+                initial_node=Node(state=self, parent=None, action=None),
+                initial_objective=MiniMaxObjectiveEnum.MAX,
+                terminal=TicTacToe.terminal,
+                utility=TicTacToe.utility,
+                result=TicTacToe.result,
+                actions=TicTacToe.actions,
+            )
 
         if not self._quiet:
             self.show_game()
-        
+
     def show_game(self) -> None:
         """
         Displays the current state of the game board to the console.
@@ -224,7 +246,7 @@ class TicTacToe:
             winner = "Player 2"
         else:
             winner = None
-    
+
         # Display the winner if there is one
         if winner:
             print(f"{winner} wins!")
@@ -235,51 +257,59 @@ class TicTacToe:
         else:
             current_player = self.identify_player(self.player)
             print(f"Player {current_player}'s ({self.player}) turn")
-    
+
         # Display the current board
         print(self)
-        
 
     def adversarial_move(self, make_move=False) -> Tuple[int, Node[Any, GridLocation]]:
         """
         Executes an adversarial move based on the MiniMax algorithm in the current game state.
-    
-        This method initializes a MiniMax instance with the current game state and then 
-        computes the optimal adversarial move. The move is determined by evaluating the game's 
-        potential future states and choosing the one that maximizes the chances of winning, 
+
+        This method initializes a MiniMax instance with the current game state and then
+        computes the optimal adversarial move. The move is determined by evaluating the game's
+        potential future states and choosing the one that maximizes the chances of winning,
         as per the MiniMax strategy.
-    
-        After computing the move, the game state is updated to reflect this choice, and the 
-        method returns the score associated with the move and the corresponding node in the 
+
+        After computing the move, the game state is updated to reflect this choice, and the
+        method returns the score associated with the move and the corresponding node in the
         game tree that represents the new state.
-    
+
         Returns:
-            Tuple[int, Node[TicTacToe, GridLocation]]: A tuple containing the score of the 
+            Tuple[int, Node[TicTacToe, GridLocation]]: A tuple containing the score of the
             computed move and the node representing the game state after the move is made.
         """
-        self._mini_max = MiniMax[TicTacToe, GridLocation](initial_node=Node(state=self, parent=None, action=None), initial_objective=MiniMaxObjectiveEnum.MAX, terminal=TicTacToe.terminal, utility=TicTacToe.utility, result=TicTacToe.result, actions=TicTacToe.actions)
-    
+        self._mini_max = MiniMax[TicTacToe, GridLocation](
+            initial_node=Node(state=self, parent=None, action=None),
+            initial_objective=MiniMaxObjectiveEnum.MAX,
+            terminal=TicTacToe.terminal,
+            utility=TicTacToe.utility,
+            result=TicTacToe.result,
+            actions=TicTacToe.actions,
+        )
+
         score, next_node = self._mini_max.start_mini_max()
         if make_move:
             self.next_turn(next_node.action)
         return (score, next_node)
 
-
-        
-    def _get_termination_state(self) -> Union[None, TerminationStateEnum]:
+    def _get_termination_state(self) -> Optional[TerminationStateEnum]:
         """
         Determines whether there is a winner, looser or if there is a tie in the current state.
         """
         winner: Optional[str] = None
 
-        determine_winner_state: Callable[[Optional[str]], TerminationStateEnum] = lambda winner: TerminationStateEnum.PlayerOneWon if self.identify_player(winner) == 1 else TerminationStateEnum.PlayerTwoWon
+        determine_winner_state: Callable[[Optional[str]], TerminationStateEnum] = (
+            lambda winner: TerminationStateEnum.PlayerOneWon
+            if self.identify_player(winner) == 1
+            else TerminationStateEnum.PlayerTwoWon
+        )
         for i in range(3):
             # Check for horizontal and vertical win
             if self._grid[i][0] == self._grid[i][1] == self._grid[i][2] != "":
                 winner = self._grid[i][0]
             elif self._grid[0][i] == self._grid[1][i] == self._grid[2][i] != "":
                 winner = self._grid[0][i]
-    
+
             if winner:
                 return determine_winner_state(winner)
         # Check for diagonal win
@@ -287,27 +317,27 @@ class TicTacToe:
             winner = self._grid[0][0]
         elif self._grid[0][2] == self._grid[1][1] == self._grid[2][0] != "":
             winner = self._grid[0][2]
-        
+
         if winner:
             return determine_winner_state(winner)
         # Check for tie
         if self._plays == 9:
             return TerminationStateEnum.Tie
-        # Game has not terminated yet. 
+        # Game has not terminated yet.
         return None
 
     def identify_player(self, player: str) -> Optional[int]:
         """
         Determines the numerical identifier of the current player based on their symbol.
-    
-        The method checks against the symbols provided in the self.players list, where the first 
-        item represents the first player and the second item the second player. 
-    
+
+        The method checks against the symbols provided in the self.players list, where the first
+        item represents the first player and the second item the second player.
+
         Returns:
         - 1 if the player is the first player.
         - 2 if the player is the second player.
         - None if the player symbol is not recognized as a valid player.
-    
+
         Parameters:
         - player: The symbol representing the player to identify.
         """
@@ -318,9 +348,8 @@ class TicTacToe:
             return 1
         return 2
 
-
     def _check_valid_move(self, gl: GridLocation) -> bool:
-        """Determines whether a given move is valid. Not out of bounds, and the field is not occupied: """
+        """Determines whether a given move is valid. Not out of bounds, and the field is not occupied:"""
         if self._check_out_of_boundary(gl) or self._is_location_occupied(gl):
             return False
         return True
@@ -337,7 +366,7 @@ class TicTacToe:
         """
         row, column = gl.row, gl.column
         return not (0 <= row <= 2 and 0 <= column <= 2)
-    
+
     def _is_location_occupied(self, gl: GridLocation) -> bool:
         """
         Determines if the specified grid location is already occupied.
@@ -348,10 +377,12 @@ class TicTacToe:
         Returns:
             bool: True if the location is occupied, False if it is free.
         """
-        assert not self._check_out_of_boundary(gl), f"The specified GridLocation is out of bounds: {gl}"
+        assert not self._check_out_of_boundary(
+            gl
+        ), f"The specified GridLocation is out of bounds: {gl}"
         row, column = gl.row, gl.column
         return self._grid[row][column] != ""
-    
+
     def _copy_game(self):
         """
         Creates a deep copy of the current TicTacToe game instance.
@@ -360,8 +391,13 @@ class TicTacToe:
             TicTacToe: A new instance of TicTacToe with the same TerminationState as the current game.
         """
         # Make deep copy of grid so that they do not share the same reference to the underlying grid)
-        return TicTacToe(players=self._players, initial_player=self._player, initial_grid=self._copy_grid(), play_with_adversarial_search=self._play_with_adversarial_search)
-        
+        return TicTacToe(
+            players=self._players,
+            initial_player=self._player,
+            initial_grid=self._copy_grid(),
+            play_with_adversarial_search=self._play_with_adversarial_search,
+        )
+
     def _copy_grid(self) -> List[List[str]]:
         """
         Creates a deep copy of the game grid.
@@ -375,8 +411,10 @@ class TicTacToe:
         """
         Switches the turn to the other player.
         """
-        self._player: str = self._players[1] if self._player == self._players[0] else self._players[0]
-        
+        self._player: str = (
+            self._players[1] if self._player == self._players[0] else self._players[0]
+        )
+
     def __str__(self) -> str:
         """
         Provides a string representation of the game board.
@@ -384,4 +422,6 @@ class TicTacToe:
         Returns:
             str: The string representation of the current TerminationState of the game board.
         """
-        return "\n".join([" ".join([cell if cell else '.' for cell in row]) for row in self._grid])
+        return "\n".join(
+            [" ".join([cell if cell else "." for cell in row]) for row in self._grid]
+        )

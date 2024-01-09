@@ -2,6 +2,7 @@ from typing import List
 from gui.helpers.empty_buttons import empty_buttons
 from models.tic_tac_toe import TicTacToe
 
+
 def restart_game(game: TicTacToe, buttons: List[List], label) -> None:
     """
     Restarts the TicTacToe game.

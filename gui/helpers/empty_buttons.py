@@ -1,5 +1,6 @@
 from typing import List
 
+
 def empty_buttons(buttons: List[List]) -> None:
     """
     Clears the text from all buttons on the TicTacToe board.

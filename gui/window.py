@@ -5,6 +5,7 @@ from gui.helpers.next_turn import next_turn
 from gui.helpers.restart_game import restart_game
 from shared.constants import FONT
 
+
 def construct_window_and_game(game: TicTacToe) -> Tk:
     # Initialize the main window for the game
     window = Tk()
@@ -20,7 +21,12 @@ def construct_window_and_game(game: TicTacToe) -> Tk:
         label.config(text=f"{game.player}'s turn")
 
     # Define a button to reset the game, linking it to the 'restart_game_and_update_label' function
-    reset_button = Button(window, text="Restart", font=(FONT, 20), command=lambda: restart_game_and_update_label(game))
+    reset_button = Button(
+        window,
+        text="Restart",
+        font=(FONT, 20),
+        command=lambda: restart_game_and_update_label(game),
+    )
     reset_button.pack(side="top")
 
     # Create a frame to contain the Tic-Tac-Toe grid buttons
@@ -28,15 +34,30 @@ def construct_window_and_game(game: TicTacToe) -> Tk:
     frame.pack()
 
     # Create and place buttons in a 3x3 grid inside the frame
-    buttons = [[None for _ in range(3)] for _ in range(3)]  # Create a 3x3 matrix of None
+    buttons = [
+        [None for _ in range(3)] for _ in range(3)
+    ]  # Create a 3x3 matrix of None
 
     for row in range(3):
         for column in range(3):
             # Function to handle button click, captures current row and column
             def handle_button_click(r=row, c=column):
-                next_turn(game, GridLocation(r, c), buttons, label, play_with_adversarial_search=True)
+                next_turn(
+                    game,
+                    GridLocation(r, c),
+                    buttons,
+                    label,
+                    play_with_adversarial_search=True,
+                )
 
             # Initialize each button and set its action
-            buttons[row][column] = Button(frame, text="", font=(FONT, 40), width=5, height=2, command=handle_button_click)
+            buttons[row][column] = Button(
+                frame,
+                text="",
+                font=(FONT, 40),
+                width=5,
+                height=2,
+                command=handle_button_click,
+            )
             buttons[row][column].grid(row=row, column=column)
     return window

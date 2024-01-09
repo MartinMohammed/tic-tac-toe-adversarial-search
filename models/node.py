@@ -1,13 +1,14 @@
 from typing import Generic, Optional
 from shared.types import T, U
 
+
 class Node(Generic[T, U]):
     """
     Represents a node in a partially directed graph where nodes can have children,
     but not all nodes necessarily have a parent.
     """
 
-    def __init__(self, state: T, parent: Optional["Node[T, U]"], action: Optional[U],  cost: float = 0.0, heuristic: float = 0.0):
+    def __init__(self, state: T, parent: Optional["Node[T, U]"], action: Optional[U]):
         """
         Initializes a node in the graph with the given state, optional parent node,
         cost, and heuristic.

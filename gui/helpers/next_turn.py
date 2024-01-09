@@ -3,7 +3,14 @@ from models.tic_tac_toe import TicTacToe
 from models.grid_location import GridLocation
 from enums.termination_state_enum import TerminationStateEnum
 
-def next_turn(game: TicTacToe, gl: GridLocation, buttons: List[List], label, play_with_adversarial_search=True) -> None:
+
+def next_turn(
+    game: TicTacToe,
+    gl: GridLocation,
+    buttons: List[List],
+    label,
+    play_with_adversarial_search=True,
+) -> None:
     """
     Processes a player's turn in the TicTacToe game.
 
@@ -16,7 +23,7 @@ def next_turn(game: TicTacToe, gl: GridLocation, buttons: List[List], label, pla
     row, column = gl.row, gl.column
     if game.termination_state is not None:
         label.config(text="The game has ended.")
-        return        
+        return
 
     buttons[row][column]["text"] = game.player
     game.next_turn(GridLocation(row, column))
@@ -29,10 +36,18 @@ def next_turn(game: TicTacToe, gl: GridLocation, buttons: List[List], label, pla
             action: GridLocation = next_node.action
             print(score, action)
             # Avoid infinite loop, no adversarial move next.
-            next_turn(game=game, gl=action, buttons=buttons, label=label, play_with_adversarial_search=False)
-            
-    elif termination_state in [TerminationStateEnum.PlayerTwoWon, TerminationStateEnum.PlayerOneWon]:
+            next_turn(
+                game=game,
+                gl=action,
+                buttons=buttons,
+                label=label,
+                play_with_adversarial_search=False,
+            )
+
+    elif termination_state in [
+        TerminationStateEnum.PlayerTwoWon,
+        TerminationStateEnum.PlayerOneWon,
+    ]:
         label.config(text=f"{game.player} has won")
     else:
         label.config(text="It is a tie")
-        
