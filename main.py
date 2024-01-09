@@ -5,7 +5,10 @@ from models.player import Player
 from gui.window import TicTacToeWithGUI
 
 
-players: List[Player] = [Player(identifier=1, symbol=BOARD_SYMBOLS[0]), Player(identifier=2, symbol=BOARD_SYMBOLS[1])]
+players: List[Player] = [
+    Player(identifier=1, symbol=BOARD_SYMBOLS[0]),
+    Player(identifier=2, symbol=BOARD_SYMBOLS[1]),
+]
 
 # Initialize the TicTacToe game instance
 # Need to make adversarial move manually, because otherwise the UI does not reflect the change.

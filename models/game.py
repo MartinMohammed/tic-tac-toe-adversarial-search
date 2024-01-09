@@ -10,7 +10,11 @@ from models.player import Player
 from enums.player_enum import PlayerEnum
 from shared.utils.player_utils import get_player_by_symbol
 from shared.utils.board_utils import create_grid
-from shared.exceptions.exception import InvalidGridLocationError, InvalidSymbolError, InvalidInstanceError
+from shared.exceptions.exception import (
+    InvalidGridLocationError,
+    InvalidSymbolError,
+    InvalidInstanceError,
+)
 
 
 class Game:
@@ -249,7 +253,9 @@ class Game:
                 self.adversarial_move(make_move=True)
         return self
 
-    def adversarial_move(self, make_move: bool = False) -> Tuple[int, Node[Game, GridLocation]]:
+    def adversarial_move(
+        self, make_move: bool = False
+    ) -> Tuple[int, Node[Game, GridLocation]]:
         """
         Executes an adversarial move based on the MiniMax algorithm in the current game state.
 

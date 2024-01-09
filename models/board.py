@@ -6,7 +6,12 @@ from custom_types.grid_type import GridType
 from models.player import Player
 from shared.constants import COLUMNS, ROWS
 from shared.utils.board_utils import create_grid
-from shared.exceptions.exception import InvalidGridLocationError, InvalidSymbolError, InvalidMoveError
+from shared.exceptions.exception import (
+    InvalidGridLocationError,
+    InvalidSymbolError,
+    InvalidMoveError,
+)
+
 
 class Board:
     """
@@ -260,7 +265,7 @@ class Board:
         """
         if not isinstance(gl, GridLocation):
             raise ValueError(f"The provided GridLocation {gl} is not a GridLocation.")
-        return not (0 <=  gl.row <= 2 and 0 <= gl.column <= 2)
+        return not (0 <= gl.row <= 2 and 0 <= gl.column <= 2)
 
     def _is_blocked(self, gl: GridLocation) -> bool:
         """
