@@ -11,6 +11,7 @@ from models.player import Player
 from custom_types.grid_type import GridType
 from enums.player_enum import PlayerEnum
 from shared.utils.player_utils import get_player_by_symbol
+from shared.utils.board_utils import create_grid
 
 
 class Game:
@@ -34,7 +35,7 @@ class Game:
         players: List[Player],
         play_with_adversarial_search: bool = False,
         initial_player: Optional[Player] = None,
-        initial_board_grid: Optional[GridType] = None,
+        initial_board: Optional[Board] = None,
         **kwargs,
     ) -> None:
         """
@@ -62,10 +63,10 @@ class Game:
             initial_player in players
         ), "The initial player must be part of the provided players."
 
-        if initial_board_grid is None:
-            initial_board_grid = [["" for _ in range(COLUMNS)] for _ in range(ROWS)]
-
-        self._board = Board(initial_grid=initial_board_grid)
+        if initial_board is not None:
+            self._board: Board = initial_board
+        else:
+            self._board: Board = Board(initial_grid=create_grid(fill=""))
 
         self._play_with_adversarial_search: bool = play_with_adversarial_search
         self._mini_max: Optional[MiniMax[Game, GridLocation]] = None
@@ -134,36 +135,45 @@ class Game:
         """
         Predicts the game state resulting from making a move at the specified location.
         """
-        copy: Game = instance._copy_game()
+        copy: Game = instance._copy_game().next_turn(gl)
         return copy
 
     @staticmethod
-    def actions(instance) -> List[GridLocation]:
+    def actions(instance: Game) -> List[GridLocation]:
         """
         Provides a list of all possible legal moves in the current game state.
         """
         return [
             GridLocation(row=row, column=column)
-            for column in range(3)
-            for row in range(3)
-            if instance._grid[row][column] == ""
+            for column in range(COLUMNS)
+            for row in range(ROWS)
+            if instance._board.grid[row][column] == ""
         ]
 
     @staticmethod
-    def terminal(instance) -> bool:
+    def terminal(instance: Game) -> bool:
         """
         Checks if the game of the instance is terminal.
         """
         return instance.termination_state != None
 
     # -------------------------------------------------------------
-
-    def next_turn(self, gl: GridLocation) -> None:
+    def next_turn(self, gl: GridLocation) -> Game:
         """
-        Processes the next turn in the game at the specified grid location.
+        Processes the next turn in the game at the specified grid location and returns the game instance.
+
+        This method checks if the move at the given location is valid and, if so, makes the move and updates the game state.
+        It then checks for a winning or terminal state. If the game has not ended, it switches to the next player. If the 
+        game has ended, it updates the termination state. The method also handles adversarial moves if applicable.
+
+        After processing the turn, the method returns the current instance of the Game, reflecting any changes made during 
+        the turn.
 
         Args:
             gl (GridLocation): The location where the next move is made.
+
+        Returns:
+            Game: The current instance of the Game, updated with the changes made during this turn.
         """
         if self._board.check_valid_move(gl):
             # Make the move
@@ -187,6 +197,8 @@ class Game:
                 and self._termination_state is None
             ):
                 self.adversarial_move(make_move=True)
+        return self
+
 
     def adversarial_move(self, make_move=False) -> Tuple[int, Node[Any, GridLocation]]:
         """
@@ -342,7 +354,7 @@ class Game:
         return Game(
             players=self._players,
             initial_player=self._player,
-            initial_board_grid=self._board._copy_board(),
+            initial_board=self._board.copy_board(),
             play_with_adversarial_search=self._play_with_adversarial_search,
         )
 
@@ -385,7 +397,7 @@ class Game:
                 termination_info: str = "It is a tie!"
             else:
                 termination_info = f"The winner is Player {self._player.identifier} ({self._player.symbol})"
-
+        self._board.show_board()
         return (
             f"Game has terminated: {has_game_terminated}\n"
             f"Board State:\n{self._board}\n"

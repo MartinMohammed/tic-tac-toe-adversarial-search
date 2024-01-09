@@ -19,6 +19,6 @@ game1: Game = Game(
 game1.start()
 
 window_with_game: Tk = construct_window_and_game(
-    game=game1, play_with_adversarial_search=False
+    game=game1, play_with_adversarial_search=True
 )
 window_with_game.mainloop()

@@ -5,6 +5,7 @@ from models.grid_location import GridLocation
 from custom_types.grid_type import GridType
 from models.player import Player
 from shared.constants import COLUMNS, ROWS
+from shared.utils.board_utils import create_grid
 
 
 class Board:
@@ -127,7 +128,7 @@ class Board:
         Returns:
             Board: A new Board instance reflecting the state after performing the action.
         """
-        return self._copy_board().mark(action)
+        return self.copy_board().mark(action)
 
     def reset_board(self) -> Board:
         """
@@ -148,7 +149,7 @@ class Board:
         self._plays = 0
         return self
 
-    def _copy_board(self) -> Board:
+    def copy_board(self) -> Board:
         """
         Creates a deep copy of the current Board instance.
 
@@ -164,7 +165,7 @@ class Board:
         This method resets each cell in the game grid to an empty state, preparing the board for a new game or for
         state evaluation purposes.
         """
-        self._grid = [["" for _ in range(self._columns)] for _ in range(self._rows)]
+        self._grid = create_grid(fill="")
 
     def check_valid_move(self, gl: GridLocation) -> bool:
         """
@@ -209,20 +210,20 @@ class Board:
         row, column = gl.row, gl.column
         return self._grid[row][column] != ""
 
-    def _copy_board(self) -> Board:
+    def _copy_grid(self) -> GridType:
         """
-        Creates a deep copy of the current Board instance.
+        Creates a deep copy of the game grid.
 
-        This method generates a new Board instance using a deep copy of the current board's grid.
-        The new Board instance will have the same grid state as the current one but will be completely independent.
-        Any changes made to the new Board will not affect this one. This can be useful for creating hypothetical
-        scenarios or for backtracking algorithms where you need to explore different board states without affecting
-        the original board.
+        This method generates a new grid that is a deep copy of the current board's grid.
+        The new grid will have the same state as the current one but will be completely independent.
+        Any changes made to the new grid will not affect the original grid. This is particularly useful
+        for operations that require grid manipulation without altering the original state, such as
+        creating hypothetical scenarios or implementing backtracking algorithms.
 
         Returns:
-            Board: A new Board instance with a grid that is a deep copy of the current board's grid.
+            GridType: A new grid that is a deep copy of the current board's grid.
         """
-        return Board(initial_grid=self.copy_grid())
+        return [[self._grid[row][column] for column in range(self._columns)] for row in range(self._rows)]
 
     def __str__(self) -> str:
         """
