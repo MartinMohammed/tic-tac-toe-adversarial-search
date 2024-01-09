@@ -124,7 +124,7 @@ class TicTacToeWithGUI:
         """Restarts the game and updates the label to reflect the new game state."""
         self._game.new_game()
         self._empty_buttons()
-        self._label.config(text=f"Player {self.player.identifier} is next.")
+        self._label.config(text=f"Player {self._game.player.identifier} ({self._game.player.symbol}) is next.")
 
     def _empty_buttons(self) -> None:
         """Clears all buttons on the board."""
