@@ -11,8 +11,6 @@ class MiniMax(Generic[T, U]):
 
     Attributes:
     - _initial_node: The starting node of the game, encapsulating the initial state.
-    - _mini_max_objective: Determines whether the goal is to maximize or minimize.
-                        By default we can assume it's initial value is MAX as root of indirect recursion.
     - _terminal: A function to check if a game state is terminal (end of game).
     - _utility: A function to evaluate the utility of a game state.
     - _actions: A function to generate possible actions from a given state.
@@ -32,46 +30,24 @@ class MiniMax(Generic[T, U]):
         utility: Callable[[T], float],
         actions: Callable[[T], List[U]],
         result: Callable[[T, U], T],
-        initial_objective: MiniMaxObjectiveEnum = MiniMaxObjectiveEnum.MAX,
     ) -> None:
         assert all(
             [
                 initial_node is not None,
-                initial_objective is not None,
                 terminal is not None,
                 actions is not None,
                 result is not None,
             ]
         ), "All parameters must be provided."
         self._initial_node: Node[T, U] = initial_node
-        self._mini_max_objective: MiniMaxObjectiveEnum = initial_objective
         self._terminal: Callable[[T], bool] = terminal
         self._utility: Callable[[T], int] = utility
         self._actions: Callable[[T], List[U]] = actions
         self._result: Callable[[T, U], T] = result
 
-    @property
-    def mini_max_objective(self) -> MiniMaxObjectiveEnum:
-        """
-        Returns the current MiniMaxObjectiveEnum.
-        """
-        return self._mini_max_objective
-
-    @mini_max_objective.setter
-    def mini_max_objective(self, new_objective: MiniMaxObjectiveEnum):
-        """
-        Sets the new MiniMaxObjectiveEnum.
-        """
-        self._mini_max_objective = new_objective
-
     def start_mini_max(self) -> Tuple[int, Node[T, U]]:
         # Initiate recursion based on the initial objective
-        if self._mini_max_objective == MiniMaxObjectiveEnum.MAX:
-            self._next_node: Tuple[int, Node[T, U]] = self.max_value(self._initial_node)
-        else:
-            self._next_node: Tuple[int, Node[T, U]] = self.min_value(self._initial_node)
-        # Return the result.
-        return self._next_node
+        return self.max_value(self._initial_node)
 
     def max_value(self, node: Node[T, U]) -> Tuple[int, Node[T, U]]:
         """
@@ -88,7 +64,6 @@ class MiniMax(Generic[T, U]):
         for action in self._actions(node.state):
             new_state: T = self._result(node.state, action)
             new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
-
             new_state_min_value, _ = self.min_value(new_node)
             if new_state_min_value > v:
                 v, max_node = new_state_min_value, new_node
@@ -109,7 +84,6 @@ class MiniMax(Generic[T, U]):
         for action in self._actions(node.state):
             new_state: T = self._result(node.state, action)
             new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
-
             new_state_max_value, _ = self.max_value(new_node)
             if new_state_max_value < v:
                 v, min_node = new_state_max_value, new_node

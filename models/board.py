@@ -6,7 +6,7 @@ from custom_types.grid_type import GridType
 from models.player import Player
 from shared.constants import COLUMNS, ROWS
 from shared.utils.board_utils import create_grid
-
+from shared.exceptions.exception import InvalidGridLocationError, InvalidSymbolError, InvalidMoveError
 
 class Board:
     """
@@ -77,9 +77,9 @@ class Board:
             ValueError: If 'action' is not a GridLocation or if 'symbol' is not a string.
         """
         if not isinstance(action, GridLocation):
-            raise ValueError(f"The provided action {action} is not a GridLocation.")
+            raise InvalidGridLocationError(gl=action)
         if not isinstance(symbol, str):
-            raise ValueError(f"The provided symbol {symbol} is not a string.")
+            raise InvalidSymbolError(symbol=symbol)
 
         return self.copy_board().mark(gl=action, symbol=symbol)
 
@@ -160,7 +160,7 @@ class Board:
             bool: True if the move is valid (within boundaries and unoccupied), False otherwise.
         """
         if not isinstance(gl, GridLocation):
-            raise ValueError(f"The provided GridLocation {gl} is not a GridLocation.")
+            raise InvalidGridLocationError(gl=gl)
 
         if self._check_out_of_boundary(gl) or self._is_blocked(gl):
             return False
@@ -184,17 +184,17 @@ class Board:
         Raises:
             ValueError: If either no GridLocation or symbol is provided, if the symbol is not a string, or if the move is not allowed.
         """
-        if gl is None or symbol is None:
-            raise ValueError("Both grid location and symbol must be provided.")
+        if not isinstance(gl, GridLocation):
+            raise InvalidGridLocationError(gl=gl)
 
         if not isinstance(symbol, str):
-            raise ValueError(f"The provided symbol ({symbol}) must be a string.")
+            raise InvalidSymbolError(symbol=symbol)
 
-        if not self.check_valid_move(gl):
-            raise ValueError(f"Move at {gl} is not allowed.")
+        if not self.check_valid_move(gl=gl):
+            raise InvalidMoveError(gl=gl)
 
         self._plays += 1
-        self._grid[gl.row][gl.column] = symbol
+        self._grid[gl.row][gl.column]: GridType = symbol
         return self
 
     def check_horizontals(self) -> Optional[str]:
@@ -258,8 +258,9 @@ class Board:
         Returns:
             bool: True if the location is out of bounds, False otherwise.
         """
-        row, column = gl.row, gl.column
-        return not (0 <= row <= 2 and 0 <= column <= 2)
+        if not isinstance(gl, GridLocation):
+            raise ValueError(f"The provided GridLocation {gl} is not a GridLocation.")
+        return not (0 <=  gl.row <= 2 and 0 <= gl.column <= 2)
 
     def _is_blocked(self, gl: GridLocation) -> bool:
         """
@@ -271,11 +272,11 @@ class Board:
         Returns:
             bool: True if the location is occupied, False if it is free.
         """
-        assert not self._check_out_of_boundary(
-            gl
-        ), f"The specified GridLocation is out of bounds: {gl}"
-        row, column = gl.row, gl.column
-        return self._grid[row][column] != ""
+        if not isinstance(gl, GridLocation):
+            raise ValueError(f"The provided GridLocation {gl} is not a GridLocation.")
+        if self._check_out_of_boundary(gl):
+            raise ValueError("The specified GridLocation is out of bounds")
+        return self._grid[gl.row][gl.column] != ""
 
     def _copy_grid(self) -> GridType:
         """

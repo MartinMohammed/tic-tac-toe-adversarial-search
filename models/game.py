@@ -10,6 +10,7 @@ from models.player import Player
 from enums.player_enum import PlayerEnum
 from shared.utils.player_utils import get_player_by_symbol
 from shared.utils.board_utils import create_grid
+from shared.exceptions.exception import InvalidGridLocationError, InvalidSymbolError, InvalidInstanceError
 
 
 class Game:
@@ -124,30 +125,83 @@ class Game:
     @staticmethod
     def utility(instance: Game) -> Optional[TerminationStateEnum]:
         """
-        Determines the utility of the game if it has reached a terminal state.
+        Determines the utility of the game if it has reached a terminal state. Raises an
+        InvalidInstanceError if the provided instance is not of type Game.
+
+        Args:
+            instance (Game): The game instance to evaluate.
+
+        Returns:
+            Optional[TerminationStateEnum]: The termination state of the game.
+
+        Raises:
+            InvalidInstanceError: If 'instance' is not of type Game.
         """
+        if not isinstance(instance, Game):
+            raise InvalidInstanceError(instance=instance, expected_type=Game)
+
         return instance.termination_state
 
     @staticmethod
     def result(instance: Game, gl: GridLocation):
         """
-        Predicts the game state resulting from making a move at the specified location.
+        Predicts the game state resulting from making a move at the specified location. Raises
+        an InvalidInstanceError if the provided instance is not of type Game.
+
+        Args:
+            instance (Game): The game instance.
+            gl (GridLocation): The grid location where the move is to be made.
+
+        Returns:
+            Game: The game state after the move.
+
+        Raises:
+            InvalidInstanceError: If 'instance' is not of type Game.
         """
+        if not isinstance(instance, Game):
+            raise InvalidInstanceError(instance=instance, expected_type=Game)
+
         copy: Game = instance._copy_game().next_turn(gl)
         return copy
 
     @staticmethod
     def actions(instance: Game) -> List[GridLocation]:
         """
-        Provides a list of all possible legal moves in the current game state.
+        Provides a list of all possible legal moves in the current game state. Raises an
+        InvalidInstanceError if the provided instance is not of type Game.
+
+        Args:
+            instance (Game): The game instance to evaluate.
+
+        Returns:
+            List[GridLocation]: A list of legal moves in the current game state.
+
+        Raises:
+            InvalidInstanceError: If 'instance' is not of type Game.
         """
+        if not isinstance(instance, Game):
+            raise InvalidInstanceError(instance=instance, expected_type=Game)
+
         return instance._board.actions()
 
     @staticmethod
     def terminal(instance: Game) -> bool:
         """
-        Checks if the game of the instance is terminal.
+        Checks if the game of the instance is terminal. Raises an InvalidInstanceError
+        if the provided instance is not of type Game.
+
+        Args:
+            instance (Game): The game instance to evaluate.
+
+        Returns:
+            bool: True if the game has reached a terminal state, False otherwise.
+
+        Raises:
+            InvalidInstanceError: If 'instance' is not of type Game.
         """
+        if not isinstance(instance, Game):
+            raise InvalidInstanceError(instance=instance, expected_type=Game)
+
         return instance.termination_state != None
 
     # -------------------------------------------------------------
@@ -168,6 +222,9 @@ class Game:
         Returns:
             Game: The current instance of the Game, updated with the changes made during this turn.
         """
+        if not isinstance(gl, GridLocation):
+            raise InvalidGridLocationError(gl=gl)
+
         if self._board.check_valid_move(gl=gl):
             # Make the move
             self._board.mark(gl=gl, symbol=self._player.symbol)
@@ -192,7 +249,7 @@ class Game:
                 self.adversarial_move(make_move=True)
         return self
 
-    def adversarial_move(self, make_move=False) -> Tuple[int, Node[Game, GridLocation]]:
+    def adversarial_move(self, make_move: bool = False) -> Tuple[int, Node[Game, GridLocation]]:
         """
         Executes an adversarial move based on the MiniMax algorithm in the current game state.
 
@@ -211,7 +268,6 @@ class Game:
         """
         self._mini_max: MiniMax[Game, GridLocation] = MiniMax[Game, GridLocation](
             initial_node=Node(state=self, parent=None, action=None),
-            initial_objective=MiniMaxObjectiveEnum.MAX,
             terminal=Game.terminal,
             utility=Game.utility,
             result=Game.result,
@@ -240,7 +296,6 @@ class Game:
             # A new instace for the minimax object since the current state has been reseted.
             self._mini_max = MiniMax[Game, GridLocation] = MiniMax(
                 initial_node=Node(state=self, parent=None, action=None),
-                initial_objective=MiniMaxObjectiveEnum.MAX,
                 terminal=Game.terminal,
                 utility=Game.utility,
                 result=Game.result,
@@ -309,6 +364,9 @@ class Game:
         Returns:
             TerminationStateEnum: The winning state (PlayerOneWon or PlayerTwoWon).
         """
+        if not isinstance(symbol, str):
+            raise InvalidSymbolError(symbol=symbol)
+
         player: Player = get_player_by_symbol(symbol, self._players)
         if player.identifier == PlayerEnum.PLAYER_1:
             return TerminationStateEnum.PlayerOneWon
@@ -372,7 +430,9 @@ class Game:
             if self._termination_state == TerminationStateEnum.Tie:
                 termination_info: str = "It is a tie!"
             else:
-                termination_info = f"The winner is Player {self._player.identifier} ({self._player.symbol})"
+                termination_info: str = f"The winner is Player {self._player.identifier} ({self._player.symbol})"
+        else:
+            termination_info: str = f"Next player is Player {self._player.identifier} ({self._player.symbol})"
         return (
             f"Game has terminated: {has_game_terminated}\n"
             f"Board State:\n{self._board}\n"
