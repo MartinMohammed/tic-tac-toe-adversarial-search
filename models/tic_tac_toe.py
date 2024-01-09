@@ -2,8 +2,8 @@ from typing import Optional, List, Union, Tuple, Any, Callable
 from models.mini_max import MiniMax
 from models.node import Node
 from models.grid_location import GridLocation
-from enums.mini_max_objective import MiniMaxObjective
-from enums.termination_state import TerminationState
+from enums.mini_max_objective_enum import MiniMaxObjectiveEnum
+from enums.termination_state_enum import TerminationStateEnum
 import random 
 
 class TicTacToe:
@@ -62,12 +62,12 @@ class TicTacToe:
         if initial_grid is None:
             self._grid: List[List[str]] = [["" for _ in range(3)] for _ in range(3)]
             self._plays: int = 0
-            self._termination_state: Union[None, TerminationState] = None
+            self._termination_state: Union[None, TerminationStateEnum] = None
         else:
             self._grid: List[List[str]] = initial_grid
             # The number of plays is the number of fields that are not available.
             self._plays: int = sum(cell != "" for row in self._grid for cell in row)
-            self._termination_state: Union[None, TerminationState] = self._get_termination_state()
+            self._termination_state: Union[None, TerminationStateEnum] = self._get_termination_state()
 
     def start(self) -> None:
         print("The game begins: ")
@@ -108,7 +108,7 @@ class TicTacToe:
         return self._players
 
     @property
-    def termination_state(self) -> Union[None, TerminationState]:
+    def termination_state(self) -> Union[None, TerminationStateEnum]:
         """
         Retrieves the current termination state of the game.
 
@@ -119,7 +119,7 @@ class TicTacToe:
 
 
     @staticmethod
-    def utility(instance) -> Union[None, TerminationState]:
+    def utility(instance) -> Union[None, TerminationStateEnum]:
         """
         Determines the utility of the game if it has reached a terminal state.
         """
@@ -171,7 +171,7 @@ class TicTacToe:
         row, column = gl.row, gl.column
         self._grid[row][column] = self._player
 
-        winner: Optional[TerminationState] = self._get_termination_state(); 
+        winner: Optional[TerminationStateEnum] = self._get_termination_state(); 
         
         # Game has not ended yet.
         if winner is None:
@@ -201,14 +201,14 @@ class TicTacToe:
         """
         self.empty_spaces()
         self._plays: int = 0
-        self._termination_state: Union[None, TerminationState] = None
+        self._termination_state: Union[None, TerminationStateEnum] = None
         self._player = self._initial_player
         if change_players:
             self._switch_player()
 
         if self._play_with_adversarial_search:
             # A new instace for the minimax object since the current state has been reseted.
-            self._mini_max = MiniMax[TicTacToe, GridLocation] = MiniMax(initial_node=Node(state=self, parent=None, action=None), initial_objective=MiniMaxObjective.MAX, terminal=TicTacToe.terminal, utility=TicTacToe.utility, result=TicTacToe.result, actions=TicTacToe.actions)
+            self._mini_max = MiniMax[TicTacToe, GridLocation] = MiniMax(initial_node=Node(state=self, parent=None, action=None), initial_objective=MiniMaxObjectiveEnum.MAX, terminal=TicTacToe.terminal, utility=TicTacToe.utility, result=TicTacToe.result, actions=TicTacToe.actions)
 
         if not self._quiet:
             self.show_game()
@@ -218,9 +218,9 @@ class TicTacToe:
         Displays the current state of the game board to the console.
         This includes showing who's turn it is, the winner, or if the game is a tie.
         """
-        if self._termination_state == TerminationState.PlayerOneWon:
+        if self._termination_state == TerminationStateEnum.PlayerOneWon:
             winner = "Player 1"
-        elif self._termination_state == TerminationState.PlayerTwoWon:
+        elif self._termination_state == TerminationStateEnum.PlayerTwoWon:
             winner = "Player 2"
         else:
             winner = None
@@ -257,7 +257,7 @@ class TicTacToe:
             Tuple[int, Node[TicTacToe, GridLocation]]: A tuple containing the score of the 
             computed move and the node representing the game state after the move is made.
         """
-        self._mini_max = MiniMax[TicTacToe, GridLocation](initial_node=Node(state=self, parent=None, action=None), initial_objective=MiniMaxObjective.MAX, terminal=TicTacToe.terminal, utility=TicTacToe.utility, result=TicTacToe.result, actions=TicTacToe.actions)
+        self._mini_max = MiniMax[TicTacToe, GridLocation](initial_node=Node(state=self, parent=None, action=None), initial_objective=MiniMaxObjectiveEnum.MAX, terminal=TicTacToe.terminal, utility=TicTacToe.utility, result=TicTacToe.result, actions=TicTacToe.actions)
     
         score, next_node = self._mini_max.start_mini_max()
         if make_move:
@@ -266,13 +266,13 @@ class TicTacToe:
 
 
         
-    def _get_termination_state(self) -> Union[None, TerminationState]:
+    def _get_termination_state(self) -> Union[None, TerminationStateEnum]:
         """
         Determines whether there is a winner, looser or if there is a tie in the current state.
         """
         winner: Optional[str] = None
 
-        determine_winner_state: Callable[[Optional[str]], TerminationState] = lambda winner: TerminationState.PlayerOneWon if self.identify_player(winner) == 1 else TerminationState.PlayerTwoWon
+        determine_winner_state: Callable[[Optional[str]], TerminationStateEnum] = lambda winner: TerminationStateEnum.PlayerOneWon if self.identify_player(winner) == 1 else TerminationStateEnum.PlayerTwoWon
         for i in range(3):
             # Check for horizontal and vertical win
             if self._grid[i][0] == self._grid[i][1] == self._grid[i][2] != "":
@@ -292,7 +292,7 @@ class TicTacToe:
             return determine_winner_state(winner)
         # Check for tie
         if self._plays == 9:
-            return TerminationState.Tie
+            return TerminationStateEnum.Tie
         # Game has not terminated yet. 
         return None
 

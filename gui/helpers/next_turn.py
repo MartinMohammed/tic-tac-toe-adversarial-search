@@ -1,7 +1,7 @@
 from typing import List, Union
 from models.tic_tac_toe import TicTacToe
 from models.grid_location import GridLocation
-from enums.termination_state import TerminationState
+from enums.termination_state_enum import TerminationStateEnum
 
 def next_turn(game: TicTacToe, gl: GridLocation, buttons: List[List], label, play_with_adversarial_search=True) -> None:
     """
@@ -31,7 +31,7 @@ def next_turn(game: TicTacToe, gl: GridLocation, buttons: List[List], label, pla
             # Avoid infinite loop, no adversarial move next.
             next_turn(game=game, gl=action, buttons=buttons, label=label, play_with_adversarial_search=False)
             
-    elif termination_state in [TerminationState.PlayerTwoWon, TerminationState.PlayerOneWon]:
+    elif termination_state in [TerminationStateEnum.PlayerTwoWon, TerminationStateEnum.PlayerOneWon]:
         label.config(text=f"{game.player} has won")
     else:
         label.config(text="It is a tie")
