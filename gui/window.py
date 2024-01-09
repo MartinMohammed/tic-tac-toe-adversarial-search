@@ -1,24 +1,24 @@
 from tkinter import Button, Tk, Frame, Label
-from models.tic_tac_toe import TicTacToe
+from models.game import Game
 from models.grid_location import GridLocation
+from shared.constants import ROWS, COLUMNS, FONT
 from gui.helpers.next_turn import next_turn
 from gui.helpers.restart_game import restart_game
-from shared.constants import FONT
 
 
-def construct_window_and_game(game: TicTacToe) -> Tk:
+def construct_window_and_game(game: Game, play_with_adversarial_search: bool = False) -> Tk:
     # Initialize the main window for the game
     window = Tk()
     window.title("Tic-Tac-Toe")
 
     # Initialize a label to display whose turn it is
-    label = Label(window, text=f"{game.player}'s turn", font=(FONT, 40))
+    label = Label(window, text=f"Player {game.player.identifier} ({game.player.symbol}) is next.", font=(FONT, 40))
     label.pack(side="top")
 
     # Define a function to update the label and restart the game
-    def restart_game_and_update_label(game: TicTacToe):
+    def restart_game_and_update_label(game: Game):
         restart_game(game, buttons, label)
-        label.config(text=f"{game.player}'s turn")
+        label.config(text=f"Player {game.player.identifier} ({game.player.symbol}) is next.")
 
     # Define a button to reset the game, linking it to the 'restart_game_and_update_label' function
     reset_button = Button(
@@ -35,19 +35,19 @@ def construct_window_and_game(game: TicTacToe) -> Tk:
 
     # Create and place buttons in a 3x3 grid inside the frame
     buttons = [
-        [None for _ in range(3)] for _ in range(3)
+        [None for _ in range(COLUMNS)] for _ in range(ROWS)
     ]  # Create a 3x3 matrix of None
 
-    for row in range(3):
-        for column in range(3):
+    for row in range(ROWS):
+        for column in range(COLUMNS):
             # Function to handle button click, captures current row and column
             def handle_button_click(r=row, c=column):
                 next_turn(
-                    game,
-                    GridLocation(r, c),
-                    buttons,
-                    label,
-                    play_with_adversarial_search=True,
+                    game=game,
+                    gl=GridLocation(r, c),
+                    buttons=buttons,
+                    label=label,
+                    play_with_adversarial_search=play_with_adversarial_search,
                 )
 
             # Initialize each button and set its action
