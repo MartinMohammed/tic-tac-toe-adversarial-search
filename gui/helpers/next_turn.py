@@ -20,7 +20,7 @@ def next_turn(
         buttons (List[List]): A 2D list of button widgets representing the game board.
         label: The label widget to display game status messages.
     """
-    
+
     if game.termination_state is not None:
         label.config(text="The game has ended.")
         return
@@ -28,7 +28,7 @@ def next_turn(
     if not game._board.check_valid_move(gl):
         print("Not a valid move.")
         return
-    
+
     row, column = gl.row, gl.column
     buttons[row][column]["text"] = game.player.symbol
     game.next_turn(GridLocation(row, column))

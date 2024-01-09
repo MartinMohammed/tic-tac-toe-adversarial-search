@@ -83,7 +83,6 @@ class Board:
 
         return self.copy_board().mark(gl=action, symbol=symbol)
 
-
     def show_board(self) -> None:
         """
         Prints the current state of the game board to the console.
@@ -92,7 +91,6 @@ class Board:
         """
         print(self)
 
-    
     def actions(self) -> List[GridLocation]:
         """
         Generates a list of possible grid locations that can be selected from the current board given its state.
@@ -163,7 +161,7 @@ class Board:
         """
         if not isinstance(gl, GridLocation):
             raise ValueError(f"The provided GridLocation {gl} is not a GridLocation.")
-    
+
         if self._check_out_of_boundary(gl) or self._is_blocked(gl):
             return False
         return True
@@ -199,8 +197,6 @@ class Board:
         self._grid[gl.row][gl.column] = symbol
         return self
 
-
-
     def check_horizontals(self) -> Optional[str]:
         """
         Checks each horizontal row in the grid to see if any are completely filled with the same symbol.
@@ -213,7 +209,6 @@ class Board:
                 return row[0]
 
         return None
-
 
     def check_verticals(self) -> Optional[str]:
         """
@@ -229,7 +224,6 @@ class Board:
 
         return None
 
-
     def check_diagonals(self) -> Optional[str]:
         """
         Checks both diagonals in the grid to see if any are completely filled with the same symbol.
@@ -238,11 +232,18 @@ class Board:
             Optional[str]: The symbol that fills a complete diagonal, or None if no diagonal is completely filled by a single symbol.
         """
         # Check left-to-right diagonal
-        if all(self._grid[i][i] == self._grid[0][0] and self._grid[i][i] != "" for i in range(self._rows)):
+        if all(
+            self._grid[i][i] == self._grid[0][0] and self._grid[i][i] != ""
+            for i in range(self._rows)
+        ):
             return self._grid[0][0]
 
         # Check right-to-left diagonal
-        if all(self._grid[i][self._columns - 1 - i] == self._grid[0][self._columns - 1] and self._grid[i][self._columns - 1 - i] != "" for i in range(self._rows)):
+        if all(
+            self._grid[i][self._columns - 1 - i] == self._grid[0][self._columns - 1]
+            and self._grid[i][self._columns - 1 - i] != ""
+            for i in range(self._rows)
+        ):
             return self._grid[0][self._columns - 1]
 
         return None

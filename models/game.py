@@ -279,10 +279,16 @@ class Game:
         """
 
         # Check horizontal and vertical lines
-        for check in [self._board.check_horizontals, self._board.check_verticals, self._board.check_diagonals]:
+        for check in [
+            self._board.check_horizontals,
+            self._board.check_verticals,
+            self._board.check_diagonals,
+        ]:
             winner = check()
             if winner is not None:
-                self._termination_state: TerminationStateEnum = self._determine_winner(winner)
+                self._termination_state: TerminationStateEnum = self._determine_winner(
+                    winner
+                )
                 return self._termination_state
 
         # Check for tie
@@ -292,7 +298,6 @@ class Game:
 
         # Game is still ongoing
         return None
-
 
     def _determine_winner(self, symbol: str) -> TerminationStateEnum:
         """
