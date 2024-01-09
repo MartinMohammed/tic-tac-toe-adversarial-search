@@ -223,7 +223,10 @@ class Board:
         Returns:
             GridType: A new grid that is a deep copy of the current board's grid.
         """
-        return [[self._grid[row][column] for column in range(self._columns)] for row in range(self._rows)]
+        return [
+            [self._grid[row][column] for column in range(self._columns)]
+            for row in range(self._rows)
+        ]
 
     def __str__(self) -> str:
         """

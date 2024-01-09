@@ -7,6 +7,7 @@ from gui.helpers.restart_game import restart_game
 from shared.utils.board_utils import create_grid
 from typing import List, Union
 
+
 def construct_window_and_game(
     game: Game, play_with_adversarial_search: bool = False
 ) -> Tk:
@@ -43,7 +44,9 @@ def construct_window_and_game(
     frame.pack()
 
     # Create and place buttons in a 3x3 grid inside the frame
-    buttons: List[List[Union[str, Button]]] = create_grid(fill="") # Create a 3x3 matrix of None
+    buttons: List[List[Union[str, Button]]] = create_grid(
+        fill=""
+    )  # Create a 3x3 matrix of None
 
     for row in range(ROWS):
         for column in range(COLUMNS):

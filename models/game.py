@@ -163,10 +163,10 @@ class Game:
         Processes the next turn in the game at the specified grid location and returns the game instance.
 
         This method checks if the move at the given location is valid and, if so, makes the move and updates the game state.
-        It then checks for a winning or terminal state. If the game has not ended, it switches to the next player. If the 
+        It then checks for a winning or terminal state. If the game has not ended, it switches to the next player. If the
         game has ended, it updates the termination state. The method also handles adversarial moves if applicable.
 
-        After processing the turn, the method returns the current instance of the Game, reflecting any changes made during 
+        After processing the turn, the method returns the current instance of the Game, reflecting any changes made during
         the turn.
 
         Args:
@@ -198,7 +198,6 @@ class Game:
             ):
                 self.adversarial_move(make_move=True)
         return self
-
 
     def adversarial_move(self, make_move=False) -> Tuple[int, Node[Any, GridLocation]]:
         """
