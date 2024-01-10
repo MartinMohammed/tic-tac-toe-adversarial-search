@@ -5,130 +5,134 @@ from shared.exceptions.general import InvalidInstanceError
 from enums.termination_state_enum import TerminationStateEnum
 from models.grid_location import GridLocation
 
-
 class MiniMax(Generic[T, U]):
     """
     Generic implementation of the MiniMax algorithm for adversarial decision-making in games.
-
-    The MiniMax algorithm calculates the optimal move in a game by considering all possible
-    future move sequences and choosing the one that maximizes the utility (for the maximizing player)
-    or minimizes the utility (for the minimizing player).
-
+    
     Attributes:
-        _initial_node (Node[T, U]): The starting node representing the initial state of the game.
-        _terminal (Callable[[T], bool]): Function to determine if a given state is terminal (end of game).
-        _utility (Callable[[T], int]): Function to evaluate the utility value of a terminal state.
-        _actions (Callable[[T], List[U]]): Function to generate a list of possible actions from a given state.
-        _result (Callable[[T, U], T]): Function to determine the resulting state from an action.
+        _initial_node (Node[T, U]): The starting node representing the initial game state.
+        _terminal (Callable[[T], bool]): Function to check if a state is terminal.
+        _utility (Callable[[T], Optional[TerminationStateEnum]]): Evaluates utility of a terminal state.
+        _actions (Callable[[T], List[U]]): Generates possible actions from a state.
+        _result (Callable[[T, U], T]): Determines the resulting state from an action.
 
     Methods:
-        start_mini_max: Initiates the MiniMax algorithm and returns the best move and its value.
-        max_value: Recursive function to calculate the maximum value of a node.
-        min_value: Recursive function to calculate the minimum value of a node.
-        _get_score: Determines the numerical score based on the termination state.
-
-    Raises:
-        InvalidInstanceError: If provided nodes, states, actions, or termination states are of incorrect types.
+        start_mini_max: Begins the MiniMax algorithm, returning the best move and its value.
+        _mini_max: Recursively calculates the node value, considering the player type.
+        _validate_node: Validates node integrity.
+        _is_better_score: Compares scores based on player type.
     """
 
     def __init__(
-        self,
-        initial_node: Node[T, U],
-        terminal: Callable[[T], bool],
-        utility: Callable[[T], int],
-        actions: Callable[[T], List[U]],
-        result: Callable[[T, U], T],
+        self, 
+        initial_node: Node[T, U], 
+        terminal: Callable[[T], bool], 
+        utility: Callable[[T], Optional[TerminationStateEnum]], 
+        actions: Callable[[T], List[U]], 
+        result: Callable[[T, U], T]
     ) -> None:
-        if not isinstance(initial_node, Node):
-            raise InvalidInstanceError(instance=initial_node, expected_type=Node)
-
-        # Additional type checks for Node components can be added here if necessary
-
+        self._validate_initial_node(node=initial_node)
         self._initial_node: Node[T, U] = initial_node
         self._terminal: Callable[[T], bool] = terminal
-        self._utility: Callable[[T], int] = utility
+        self._utility: Callable[[T], Optional[TerminationStateEnum]]  = utility
         self._actions: Callable[[T], List[U]] = actions
         self._result: Callable[[T, U], T] = result
 
-    def start_mini_max(self) -> Tuple[int, Node[T, U]]:
-        # Initiate recursion based on the initial objective
-        return self.max_value(self._initial_node)
-
-    def max_value(self, node: Node[T, U]) -> Tuple[int, Node[T, U]]:
+    def _validate_initial_node(self, node: Node[T, U]) -> None:
         """
-        Calculates the maximum value for a given node by evaluating potential actions
-        and choosing the one leading to the state with the highest minimum value.
-        """
+        Validates the initial node to ensure it's an instance of the Node class.
 
-        # Type checking using the class name as a string
-        if node.parent is not None and not isinstance(node.parent, Node):
-            raise InvalidInstanceError(instance=node.parent, expected_type=Node)
+        Args:
+            node (Node[T, U]): The node to be validated.
 
-        if node.state.__class__.__name__ != "Game":
-            raise InvalidInstanceError(instance=node.state, expected_type="Game")
-
-        if node.action is not None and not isinstance(node.action, GridLocation):
-            raise InvalidInstanceError(instance=node.action, expected_type=GridLocation)
-
-        # If state is terminal, then it's score will not be None.
-        if self._terminal(node.state):
-            score: int = self._get_score(self._utility(node.state))
-            return (score, node)
-
-        v, max_node = float("-inf"), None
-        output: List[Tuple(int, U)] = []
-        for action in self._actions(node.state):
-            new_state: T = self._result(node.state, action)
-            new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
-            new_state_min_value, _ = self.min_value(new_node)
-            output.append((new_state_min_value, new_node.action))
-            if new_state_min_value > v:
-                v, max_node = new_state_min_value, new_node
-        print(output)
-        return (v, max_node)
-
-    def min_value(self, node: Node[T, U]) -> Tuple[int, Node[T, U]]:
-        """
-        Calculates the minimum value for a given node by evaluating potential actions
-        and choosing the one leading to the state with the lowest maximum value.
+        Raises:
+            InvalidInstanceError: If the node is not an instance of the Node class.
         """
         if not isinstance(node, Node):
             raise InvalidInstanceError(instance=node, expected_type=Node)
 
-        # Type checking using the class name as a string
-        if node.parent is not None and not isinstance(node.parent, Node):
-            raise InvalidInstanceError(instance=node.parent, expected_type=Node)
-        if node.state.__class__.__name__ != "Game":
-            raise InvalidInstanceError(instance=node.state, expected_type="Game")
+    def start_mini_max(self, maximizing_player: Optional[bool] = True) -> Tuple[float, Optional[Node[T, U]]]:
+        """
+        Initiates the MiniMax algorithm and returns the best move along with its value.
 
-        if not isinstance(node.action, GridLocation):
-            raise InvalidInstanceError(instance=node.action, expected_type=GridLocation)
+        Args:
+            maximizing_player (Optional[bool]): Flag to determine if the current layer is maximizing or not. Defaults to True.
 
-        # If state is terminal, then it's score will not be None.
+        Returns:
+            Tuple[float, Optional[Node[T, U]]]: The score of the best move and the corresponding node.
+        """
+        return self._mini_max(node=self._initial_node, maximizing_player=maximizing_player)
+
+    def _mini_max(self, node: Node[T, U], maximizing_player: bool = True) -> Tuple[float, Optional[Node[T, U]]]:
+        """
+        Recursively calculates the MiniMax value of a node.
+
+        Args:
+            node (Node[T, U]): The current node in the MiniMax algorithm.
+            maximizing_player (bool): A flag indicating if the current evaluation is for a maximizing player.
+
+        Returns:
+            Tuple[float, Optional[Node[T, U]]]: The best score achievable from the current node, and the corresponding best node.
+        """
+        self._validate_node(node)
+
+        # Check if the current state is terminal and return its utility value, if so.
         if self._terminal(node.state):
-            score: int = self._get_score(self._utility(node.state))
-            return (score, node)
+            utility: TerminationStateEnum = self._utility(node.state)
+            return utility.value if utility else 0, node
 
-        v, min_node = float("inf"), None
+        # Initialize the best score based on whether the current player is maximizing or minimizing.
+        best_score: float = float('-inf') if maximizing_player else float('inf')
+
+        # Initialize the best node to track the optimal move for the current player.
+        best_node: Optional[Node[T, U]] = None
+
         for action in self._actions(node.state):
             new_state: T = self._result(node.state, action)
             new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
-            new_state_max_value, _ = self.max_value(new_node)
-            if new_state_max_value < v:
-                v, min_node = new_state_max_value, new_node
-        return (v, min_node)
 
-    def _get_score(
-        self, termination_state: Optional[TerminationStateEnum]
-    ) -> Optional[int]:
+            # Recursively call _mini_max for the next layer with the opposite player objective.
+            score, _ = self._mini_max(new_node, not maximizing_player)
+
+            # Update the best score and node if the current score is better based on the player's objective.
+            if self._is_better_score(score, best_score, maximizing_player):
+                best_score, best_node = score, new_node
+
+        return best_score, best_node
+
+    def _validate_node(self, node: Node[T, U]) -> None:
         """
-        Determines the score from a termination state. If the game is ongoing, indicated by None,
-        the score is also None. Otherwise, it returns the value associated with the termination state.
+        Validates the integrity of a node's attributes.
+
+        Args:
+            node (Node[T, U]): The node to be validated.
+
+        Raises:
+            InvalidInstanceError: If the node or its components do not meet the required type specifications.
         """
-        if termination_state is not None and not isinstance(
-            termination_state, TerminationStateEnum
-        ):
-            raise InvalidInstanceError(
-                instance=termination_state, expected_type=TerminationStateEnum
-            )
-        return None if termination_state is None else termination_state.value
+        if not isinstance(node, Node) or (node.parent and not isinstance(node.parent, Node)):
+            raise InvalidInstanceError(instance=node, expected_type=Node)
+        if node.state.__class__.__name__ != "Game":
+            raise InvalidInstanceError(instance=node.state, expected_type="Game")
+        if node.action and not isinstance(node.action, GridLocation):
+            raise InvalidInstanceError(instance=node.action, expected_type=GridLocation)
+
+    def _is_better_score(self, score: float, best_score: float, maximizing_player: bool) -> bool:
+        """
+        Compares two scores to determine if the current score is better based on the player type.
+
+        Args:
+            score (float): The current score to evaluate.
+            best_score (float): The best score recorded so far.
+            maximizing_player (bool): Indicates whether the current player is maximizing or minimizing.
+
+        Returns:
+            bool: True if the current score is better than the best score for the player type, False otherwise.
+
+        Raises:
+            ValueError: If any of the arguments are None.
+        """
+        if score is None or best_score is None or maximizing_player is None:
+            raise ValueError("None arguments are not allowed in _is_better_score.")
+
+        return (score > best_score) if maximizing_player else (score < best_score)
