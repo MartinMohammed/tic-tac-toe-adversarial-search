@@ -5,10 +5,11 @@ from shared.exceptions.general import InvalidInstanceError
 from enums.termination_state_enum import TerminationStateEnum
 from models.grid_location import GridLocation
 
+
 class MiniMax(Generic[T, U]):
     """
     Generic implementation of the MiniMax algorithm for adversarial decision-making in games.
-    
+
     Attributes:
         _initial_node (Node[T, U]): The starting node representing the initial game state.
         _terminal (Callable[[T], bool]): Function to check if a state is terminal.
@@ -24,17 +25,17 @@ class MiniMax(Generic[T, U]):
     """
 
     def __init__(
-        self, 
-        initial_node: Node[T, U], 
-        terminal: Callable[[T], bool], 
-        utility: Callable[[T], Optional[TerminationStateEnum]], 
-        actions: Callable[[T], List[U]], 
-        result: Callable[[T, U], T]
+        self,
+        initial_node: Node[T, U],
+        terminal: Callable[[T], bool],
+        utility: Callable[[T], Optional[TerminationStateEnum]],
+        actions: Callable[[T], List[U]],
+        result: Callable[[T, U], T],
     ) -> None:
         self._validate_initial_node(node=initial_node)
         self._initial_node: Node[T, U] = initial_node
         self._terminal: Callable[[T], bool] = terminal
-        self._utility: Callable[[T], Optional[TerminationStateEnum]]  = utility
+        self._utility: Callable[[T], Optional[TerminationStateEnum]] = utility
         self._actions: Callable[[T], List[U]] = actions
         self._result: Callable[[T, U], T] = result
 
@@ -51,7 +52,9 @@ class MiniMax(Generic[T, U]):
         if not isinstance(node, Node):
             raise InvalidInstanceError(instance=node, expected_type=Node)
 
-    def start_mini_max(self, maximizing_player: Optional[bool] = True) -> Tuple[float, Optional[Node[T, U]]]:
+    def start_mini_max(
+        self, maximizing_player: Optional[bool] = True
+    ) -> Tuple[float, Optional[Node[T, U]]]:
         """
         Initiates the MiniMax algorithm and returns the best move along with its value.
 
@@ -61,9 +64,13 @@ class MiniMax(Generic[T, U]):
         Returns:
             Tuple[float, Optional[Node[T, U]]]: The score of the best move and the corresponding node.
         """
-        return self._mini_max(node=self._initial_node, maximizing_player=maximizing_player)
+        return self._mini_max(
+            node=self._initial_node, maximizing_player=maximizing_player
+        )
 
-    def _mini_max(self, node: Node[T, U], maximizing_player: bool = True) -> Tuple[float, Optional[Node[T, U]]]:
+    def _mini_max(
+        self, node: Node[T, U], maximizing_player: bool = True
+    ) -> Tuple[float, Optional[Node[T, U]]]:
         """
         Recursively calculates the MiniMax value of a node.
 
@@ -82,7 +89,7 @@ class MiniMax(Generic[T, U]):
             return utility.value if utility else 0, node
 
         # Initialize the best score based on whether the current player is maximizing or minimizing.
-        best_score: float = float('-inf') if maximizing_player else float('inf')
+        best_score: float = float("-inf") if maximizing_player else float("inf")
 
         # Initialize the best node to track the optimal move for the current player.
         best_node: Optional[Node[T, U]] = None
@@ -110,14 +117,18 @@ class MiniMax(Generic[T, U]):
         Raises:
             InvalidInstanceError: If the node or its components do not meet the required type specifications.
         """
-        if not isinstance(node, Node) or (node.parent and not isinstance(node.parent, Node)):
+        if not isinstance(node, Node) or (
+            node.parent and not isinstance(node.parent, Node)
+        ):
             raise InvalidInstanceError(instance=node, expected_type=Node)
         if node.state.__class__.__name__ != "Game":
             raise InvalidInstanceError(instance=node.state, expected_type="Game")
         if node.action and not isinstance(node.action, GridLocation):
             raise InvalidInstanceError(instance=node.action, expected_type=GridLocation)
 
-    def _is_better_score(self, score: float, best_score: float, maximizing_player: bool) -> bool:
+    def _is_better_score(
+        self, score: float, best_score: float, maximizing_player: bool
+    ) -> bool:
         """
         Compares two scores to determine if the current score is better based on the player type.
 
