@@ -45,6 +45,8 @@ The algorithm prunes branches in the game tree as follows:
 2. **When Evaluating Player One's Moves (Minimizer)**:
    - If a move's potential outcome is less than or equal to $\alpha$, further exploration is unnecessary, as Player Two (Maximizer) has a better option.
 
+## Visual Representation 
+
 ![Key characteristics of alpha beta pruning visualized](./images/key-characteristics-alpha-beta-pruning.png)
 ![alpha beta pruning process in tree visualized](./images/alpha-beta-pruning-visualized.png)
 
@@ -54,8 +56,6 @@ In our Tic-Tac-Toe AI:
 - It prunes away less promising moves early, speeding up the decision-making process.
 - This ensures that the AI remains challenging and responsive, even in complex game scenarios.
 
-### Visual Representation
-![Alpha-Beta Pruning in MiniMax](./images/alpha-beta-pruning-minimax.png)
 
 ### Additional Notes
 - **Optimization**: Alpha-Beta pruning does not change the final decision of the MiniMax algorithm but improves its efficiency by skipping unnecessary evaluations.
