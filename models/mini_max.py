@@ -54,7 +54,7 @@ class MiniMax(Generic[T, U]):
 
     def start_mini_max(
         self,
-        maximizing_player: Optional[bool] = True, 
+        maximizing_player: Optional[bool] = True,
     ) -> Tuple[float, Optional[Node[T, U]]]:
         """
         Initiates the MiniMax algorithm and returns the best move along with its value.
@@ -66,17 +66,17 @@ class MiniMax(Generic[T, U]):
         """
         return self._mini_max(
             node=self._initial_node,
-            alpha=float("-inf"), 
-            beta=float("inf"), 
-            maximizing_player=maximizing_player
+            alpha=float("-inf"),
+            beta=float("inf"),
+            maximizing_player=maximizing_player,
         )
 
     def _mini_max(
-        self, 
+        self,
         node: Node[T, U],
-        alpha: float, 
-        beta: float, 
-        maximizing_player: bool = True
+        alpha: float,
+        beta: float,
+        maximizing_player: bool = True,
     ) -> Tuple[float, Optional[Node[T, U]]]:
         """
         Recursively calculates the MiniMax value of a node.
@@ -86,7 +86,7 @@ class MiniMax(Generic[T, U]):
             maximizing_player (bool): A flag indicating if the current evaluation is for a maximizing player.
             alpha represents the best score the maximizing player can achieve assuming best play of opponent
             beta represents the best score the minimzing player can achieve assuming best play of opponent
-            both alpha and beta are specific to a individual call - maximizing node or minimizing node. 
+            both alpha and beta are specific to a individual call - maximizing node or minimizing node.
 
         Returns:
             Tuple[float, Optional[Node[T, U]]]: The best score achievable from the current node, and the corresponding best node.
@@ -106,16 +106,22 @@ class MiniMax(Generic[T, U]):
         # Initialize the best node to track the optimal move for the current player.
         best_node: Optional[Node[T, U]] = None
 
-
         for action in self._actions(node.state):
             new_state: T = self._result(node.state, action)
             new_node: Node[T, U] = Node(state=new_state, parent=node, action=action)
 
             # Recursively call _mini_max for the next layer with the opposite player objective.
-            score, _ = self._mini_max(node=new_node, alpha=current_alpha, beta=current_beta, maximizing_player=not maximizing_player)
+            score, _ = self._mini_max(
+                node=new_node,
+                alpha=current_alpha,
+                beta=current_beta,
+                maximizing_player=not maximizing_player,
+            )
 
             # Update the best score and node if the current score is better based on the player's objective.
-            if self._is_better_score(score=score, best_score=best_score, maximizing_player=maximizing_player):
+            if self._is_better_score(
+                score=score, best_score=best_score, maximizing_player=maximizing_player
+            ):
                 best_score, best_node = score, new_node
 
             # Propagate scores from recursive calls to update alpha or beta values.
@@ -123,7 +129,7 @@ class MiniMax(Generic[T, U]):
                 current_alpha: float = max(current_alpha, score)
             else:
                 current_beta: float = min(current_beta, score)
-            
+
             # Leaving for loop means we are not continuing exploring the childs of the `node`.
             if self._prune_node(alpha=current_alpha, beta=current_beta):
                 break
@@ -165,7 +171,9 @@ class MiniMax(Generic[T, U]):
             ValueError: If alpha or beta is not numeric, or if alpha is greater than beta.
         """
         if not isinstance(alpha, (float, int)):
-            raise ValueError(f"Alpha must be a numeric value, got {type(alpha)} instead.")
+            raise ValueError(
+                f"Alpha must be a numeric value, got {type(alpha)} instead."
+            )
         if not isinstance(beta, (float, int)):
             raise ValueError(f"Beta must be a numeric value, got {type(beta)} instead.")
 
